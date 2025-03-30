@@ -35,6 +35,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clientmaintenancier.R
+import com.example.clientmaintenancier.ui.screens.DeviceInfo
+import com.example.clientmaintenancier.ui.screens.TaskInfo
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 
@@ -97,7 +99,9 @@ fun StatusCard(
 fun DeviceSection(
     sectionTitle: String,
     titleColor: Color,
-    batteryLevel: Int
+    batteryLevel: Int,
+    devices: List<DeviceInfo>,
+    onMoreInfoClick: (deviceId: Int) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -140,8 +144,11 @@ fun DeviceSection(
         Spacer(modifier = Modifier.height(8.dp))
 
         // Device Card
-        DeviceCard()
-        InfoButton()
+        devices.forEach { device ->
+            DeviceCard(device)
+            InfoButton(onMoreInfoClick)
+        }
+
         Spacer(modifier = Modifier.height(12.dp))
         // Ligne de séparation
         Divider(
@@ -155,10 +162,10 @@ fun DeviceSection(
 }
 
 @Composable
-fun InfoButton() {
+fun InfoButton(onMoreInfoClick: (deviceId: Int) -> Unit) {
     // Bouton "More infos"
     OutlinedButton(
-        onClick = { },
+        onClick = { onMoreInfoClick},
         modifier = Modifier
             .fillMaxWidth()
             .padding( vertical = 16.dp),
@@ -178,7 +185,7 @@ fun InfoButton() {
 }
 
 @Composable
-fun DeviceCard() {
+fun DeviceCard(device: DeviceInfo) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -205,7 +212,7 @@ fun DeviceCard() {
             // Device Info
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Monitor",
+                    text = device.name,
                     fontSize = 16.sp,
                     fontFamily = PlusJakartaSans,
                     fontWeight = FontWeight.Bold
@@ -223,7 +230,7 @@ fun DeviceCard() {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Main Hall",
+                        text = device.location,
                         fontSize = 14.sp,
                         fontFamily = PlusJakartaSans,
                         color = Color.DarkGray
@@ -232,7 +239,7 @@ fun DeviceCard() {
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Text(
-                        text = "29 JAN, 12:30",
+                        text = device.timestamp,
                         fontSize = 12.sp,
                         fontFamily = PlusJakartaSans,
                         color = Color.Gray
@@ -247,7 +254,7 @@ fun DeviceCard() {
 
 
 @Composable
-fun DeviceCard2(problem: String ) {
+fun DeviceCard2(task: TaskInfo ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -275,13 +282,13 @@ fun DeviceCard2(problem: String ) {
             Column(modifier = Modifier.weight(1f)) {
                 Row (Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
                     Text(
-                        text = "Monitor",
+                        text = task.deviceName,
                         fontSize = 16.sp,
                         fontFamily = PlusJakartaSans,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = problem,
+                        text = task.problem,
                         fontSize = 12.sp,
                         fontFamily = PlusJakartaSans,
                         fontWeight = FontWeight.Medium
@@ -302,7 +309,7 @@ fun DeviceCard2(problem: String ) {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Main Hall",
+                        text = task.location,
                         fontSize = 14.sp,
                         fontFamily = PlusJakartaSans,
                         color = Color.DarkGray
@@ -311,7 +318,7 @@ fun DeviceCard2(problem: String ) {
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Text(
-                        text = "29 JAN, 12:30",
+                        text =task.maintenanceTime,
                         fontSize = 12.sp,
                         fontFamily = PlusJakartaSans,
                         color = Color.Gray
@@ -329,7 +336,9 @@ fun DeviceSection2(
     sectionTitle: String,
     titleColor: Color,
     batteryLevel: Int,
-    problem: String
+    onMoreInfoClick: (deviceId: Int) -> Unit,
+    onStartMaintenanceClick: (taskId: Int) -> Unit,
+    tasks: List<TaskInfo>
 ) {
     Column(
         modifier = Modifier
@@ -372,55 +381,60 @@ fun DeviceSection2(
         Spacer(modifier = Modifier.height(8.dp))
 
         // Device Card
-        DeviceCard2(problem)
-        //buttons
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            // Button 1
-            OutlinedButton(
-                onClick = { },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding( vertical = 16.dp),
-                shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, Color(0xFFFF8C00)),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = AppColors.primary
-                )
+        tasks.forEach { task ->
+            DeviceCard2(task)
+            //buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text(
-                    text = "Device details",
-                    fontSize = 12.sp,
-                    fontFamily = PlusJakartaSans,
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.Center
-                )
+                // Button 1
+                OutlinedButton(
+                    onClick = {onMoreInfoClick },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding( vertical = 16.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, Color(0xFFFF8C00)),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = AppColors.primary
+                    )
+                ) {
+                    Text(
+                        text = "Device details",
+                        fontSize = 12.sp,
+                        fontFamily = PlusJakartaSans,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                // Button 2
+                OutlinedButton(
+                    onClick = { onStartMaintenanceClick},
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding( vertical = 16.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, Color(0xFFFF8C00)),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.White,
+                        containerColor = AppColors.primary
+                    )
+                ) {
+                    Text(
+                        text = "Start maintenance",
+                        fontSize = 12.sp,
+                        fontFamily = PlusJakartaSans,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
 
-            // Button 2
-            OutlinedButton(
-                onClick = { },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding( vertical = 16.dp),
-                shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, Color(0xFFFF8C00)),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color.White,
-                    containerColor = AppColors.primary
-                )
-            ) {
-                Text(
-                    text = "Start maintenance",
-                    fontSize = 12.sp,
-                    fontFamily = PlusJakartaSans,
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.Center
-                )
-            }
         }
+
+
         Spacer(modifier = Modifier.height(12.dp))
         // Ligne de séparation
         Divider(

@@ -136,7 +136,7 @@ fun OnboardingScreen(navController: NavHostController) {
             Spacer(modifier = Modifier.height(8.dp))
 
             TextButton(
-                onClick = { navController.navigate(Destination.Home.route) },
+                onClick = { navController.navigate(Destination.Registration.route) },
                 modifier = Modifier.fillMaxWidth().height(64.dp),
                 shape = RoundedCornerShape(12.dp),
             ) {

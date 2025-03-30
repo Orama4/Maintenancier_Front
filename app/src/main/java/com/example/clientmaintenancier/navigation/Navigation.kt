@@ -5,11 +5,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.clientmaintenancier.ui.screens.DeviceInfo
+import com.example.clientmaintenancier.ui.screens.DeviceStatus
 import com.example.clientmaintenancier.ui.screens.ForgetPasswordScreen
 import com.example.clientmaintenancier.ui.screens.HomeScreen
 import com.example.clientmaintenancier.ui.screens.LoginScreen
 import com.example.clientmaintenancier.ui.screens.OnboardingScreen
 import com.example.clientmaintenancier.ui.screens.RegistrationScreen
+import com.example.clientmaintenancier.ui.screens.TaskInfo
 import com.example.clientmaintenancier.ui.screens.TasksScreen
 import com.example.clientmaintenancier.ui.screens.VerificationScreen
 
@@ -36,8 +39,27 @@ fun NavigationScreen(navController: NavHostController) {
         composable(Destination.Verification.route) { VerificationScreen() }
         composable(Destination.Login.route) { LoginScreen(navController) }
         composable(Destination.ForgotPassword.route) { ForgetPasswordScreen(navController) }
-        composable(Destination.Home.route) { HomeScreen() }
-        composable(Destination.Tasks.route) { TasksScreen() }
+        composable(Destination.Home.route) { HomeScreen(
+            "Abla", notificationCount = 2, devices = listOf(
+                DeviceInfo(1,"Monitor","Oued Smar","21 JAN, 12:30",DeviceStatus.DISCONNECTED),
+                DeviceInfo(2,"Monitor","Oued Smar","21 JAN, 12:30",DeviceStatus.CONNECTED),
+                DeviceInfo(3,"Monitor","Oued Smar","21 JAN, 12:30",DeviceStatus.CONNECTED),
+                DeviceInfo(4,"Monitor","Oued Smar","21 JAN, 12:30",DeviceStatus.DOWN),
+            ),onUserSearch = {},onMoreInfoClick = {},onNotificationClick = {},onMenuClick = {}
+        ) }
+        composable(Destination.Tasks.route) { TasksScreen(
+            notificationCount = 2,
+            onMenuClick = {},
+            onNotificationClick = {},
+            onTaskSearch = {},
+            tasks = listOf(
+                TaskInfo(1,"Monitor",1,"Battery","Down",100,"Oued Smar","21 JAN, 12:30"),
+                TaskInfo(2,"Monitor",2,"Monitor","Down",100,"Oued Smar","21 JAN, 12:30"),
+                TaskInfo(3,"Monitor",3,"Monitor","Down",100,"Oued Smar","21 JAN, 12:30"),
+            ),
+            onDeviceDetailsClick = {},
+            onStartMaintenanceClick = {}
+        ) }
 
     }
 }

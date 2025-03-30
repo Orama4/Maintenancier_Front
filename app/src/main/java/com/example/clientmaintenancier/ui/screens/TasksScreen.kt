@@ -1,8 +1,11 @@
 package com.example.clientmaintenancier.ui.screens
+import android.icu.text.StringSearch
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,6 +15,10 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,8 +32,27 @@ import com.example.clientmaintenancier.ui.components.*
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 
+data class TaskInfo(
+    val id: Int,
+    val problem: String,
+    val deviceId : Int,
+    val deviceName: String,
+    val status: String,
+    val batteryLevel: Int,
+    val location: String,
+    val maintenanceTime: String
+)
 @Composable
-fun TasksScreen() {
+fun TasksScreen(
+    notificationCount: Int,
+    onMenuClick: () -> Unit,
+    onNotificationClick: () -> Unit,
+    onTaskSearch: (String) -> Unit,
+    tasks: List<TaskInfo>,
+    onDeviceDetailsClick: (deviceId: Int) -> Unit,
+    onStartMaintenanceClick: (taskId: Int) -> Unit
+    ) {
+    var searchText by remember { mutableStateOf("") }
     val primaryOrange = AppColors.primary
     val greenConnected = AppColors.green
     val redDown = AppColors.red
@@ -50,8 +76,10 @@ fun TasksScreen() {
                     modifier = Modifier
                         .size(45.dp)
                         .clip(CircleShape)
-                        .background(grayBackground),
-                    contentAlignment = Alignment.Center
+                        .background(grayBackground)
+                        .clickable(onClick = onMenuClick),
+                    contentAlignment = Alignment.Center,
+
                 ) {
 
                     Icon(
@@ -68,7 +96,8 @@ fun TasksScreen() {
                         modifier = Modifier
                             .size(45.dp)
                             .clip(CircleShape)
-                            .background(Color.Black),
+                            .background(Color.Black)
+                            .clickable(onClick = onNotificationClick),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -88,7 +117,7 @@ fun TasksScreen() {
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "2",
+                            text = notificationCount.toString(),
                             color = Color.White,
                             fontSize = 12.sp,
                             fontFamily = PlusJakartaSans,
@@ -109,7 +138,7 @@ fun TasksScreen() {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding( bottom = 16.dp)
+                        .padding(bottom = 16.dp)
                 ) {
 
                     Text(
@@ -122,15 +151,24 @@ fun TasksScreen() {
 
                 // Search Bar
                 TextField(
-                    value = "",
-                    onValueChange = {},
+                    value = searchText,
+                    onValueChange = {
+                        searchText = it
+                        onTaskSearch(it)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 16.dp)
                         .clip(RoundedCornerShape(8.dp))
                         .background(grayBackground),
                     placeholder = { Text("Search task", fontFamily = PlusJakartaSans) },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.Gray.copy(0.6f)) },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = "Search",
+                            tint = Color.Gray.copy(0.6f)
+                        )
+                    },
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = grayBackground,
                         unfocusedContainerColor = grayBackground,
@@ -140,19 +178,25 @@ fun TasksScreen() {
                     ),
                     singleLine = true
                 )
-
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentPadding = PaddingValues(vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item{
                 // Status Cards Grid
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                    ,
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     // Total Card
                     StatusCard(
                         modifier = Modifier.weight(1f),
                         title = "Total tasks",
-                        count = "4 tasks",
+                        count = "${tasks.size} tasks",
                         iconContent = {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_grid),
@@ -179,36 +223,26 @@ fun TasksScreen() {
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-
+                    }
 
 
                 // Device List
-                // Connected Devices
-                DeviceSection2(
-                    sectionTitle = "Down",
-                    titleColor = redDown,
-                    batteryLevel = 50,
-                    problem = "Battery replacement"
-                )
+                if (tasks.isNotEmpty()) {
+                    item {
+                        DeviceSection2(
+                            sectionTitle = "Down",
+                            titleColor = redDown,
+                            batteryLevel = 50,
+                            tasks = tasks,
+                            onMoreInfoClick = onDeviceDetailsClick,
+                            onStartMaintenanceClick = onStartMaintenanceClick,
 
-                // Disconnected Devices
-                DeviceSection2(
-                    sectionTitle = "Down",
-                    titleColor = redDown,
-                    batteryLevel = 50,
-                    problem = "sensor calibration"
-                )
-
-                // Down Devices
-                DeviceSection2(
-                    sectionTitle = "Down",
-                    titleColor = redDown,
-                    batteryLevel = 50,
-                    problem = "sensor calibration"
-                )
-
+                        )
+                    }
+                }
                 // Add extra padding at the bottom to ensure content isn't hidden behind bottom nav
-                Spacer(modifier = Modifier.height(60.dp))
+                item { Spacer(Modifier.height(16.dp)) }
+            }
             }
         }
     }

@@ -2,6 +2,7 @@ package com.example.clientmaintenancier.ui.screens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -11,7 +12,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,8 +31,30 @@ import com.example.clientmaintenancier.ui.components.*
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 
+enum class DeviceStatus(val displayName: String) {
+    CONNECTED("Connected"),
+    DISCONNECTED("Disconnected"),
+    DOWN("Down")
+}
+data class DeviceInfo(
+    val id: Int,
+    val name: String,
+    val location: String,
+    val timestamp: String,
+    val status: DeviceStatus,
+    val imageUrl: String? = null
+)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    username: String = "Abla",
+    devices: List<DeviceInfo>,
+    onUserSearch: (String) -> Unit,
+    onMoreInfoClick: (deviceId: Int) -> Unit,
+    onNotificationClick: () -> Unit,
+    onMenuClick: () -> Unit,
+    notificationCount: Int
+) {
+
     val primaryOrange = AppColors.primary
     val greenConnected = AppColors.green
     val redDown = AppColors.red
@@ -34,6 +62,11 @@ fun HomeScreen() {
     val lightBeige = Color(0xFFFFF0D9)
     val grayBackground = Color(0xFFF5F5F5)
     val scrollState = rememberScrollState()
+    var searchText by remember { mutableStateOf("") }
+    val deviceByStatus = devices.groupBy { it.status }
+    val connectedDevices = deviceByStatus[DeviceStatus.CONNECTED] ?: emptyList()
+    val disconnectedDevices = deviceByStatus[DeviceStatus.DISCONNECTED] ?: emptyList()
+    val downDevices = deviceByStatus[DeviceStatus.DOWN] ?: emptyList()
 
     Box(modifier = Modifier.fillMaxSize().background(Color.White).padding(16.dp) ) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -50,7 +83,8 @@ fun HomeScreen() {
                     modifier = Modifier
                         .size(45.dp)
                         .clip(CircleShape)
-                        .background(grayBackground),
+                        .background(grayBackground)
+                        .clickable(onClick = onMenuClick),
                     contentAlignment = Alignment.Center
                 ) {
 
@@ -68,7 +102,7 @@ fun HomeScreen() {
                         modifier = Modifier
                             .size(45.dp)
                             .clip(CircleShape)
-                            .background(Color.Black),
+                            .background(Color.Black).clickable(onClick = onNotificationClick),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -88,7 +122,7 @@ fun HomeScreen() {
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "2",
+                            text = notificationCount.toString(),
                             color = Color.White,
                             fontSize = 12.sp,
                             fontFamily = PlusJakartaSans,
@@ -112,7 +146,7 @@ fun HomeScreen() {
                         .padding( bottom = 16.dp)
                 ) {
                     Text(
-                        text = "Hey Abla, ",
+                        text = "Hey $username,",
                         fontFamily = PlusJakartaSans,
                         fontSize = 20.sp
                     )
@@ -126,8 +160,11 @@ fun HomeScreen() {
 
                 // Search Bar
                 TextField(
-                    value = "",
-                    onValueChange = {},
+                    value = searchText,
+                    onValueChange = {
+                        searchText = it
+                        onUserSearch(it)
+                                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 16.dp)
@@ -144,7 +181,14 @@ fun HomeScreen() {
                     ),
                     singleLine = true
                 )
-
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentPadding = PaddingValues(vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                item{
                 // Status Cards Grid
                 Row(
                     modifier = Modifier
@@ -156,7 +200,7 @@ fun HomeScreen() {
                     StatusCard(
                         modifier = Modifier.weight(1f),
                         title = "Total",
-                        count = "4 devices",
+                        count = "${devices.size.toString()} devices",
                         iconContent = {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_grid),
@@ -171,7 +215,7 @@ fun HomeScreen() {
                     StatusCard(
                         modifier = Modifier.weight(1f),
                         title = "Down",
-                        count = "1 device",
+                        count = "${downDevices.size} device",
                         iconContent = {
                             Icon(
                                 imageVector = Icons.Default.TrendingDown,
@@ -196,7 +240,7 @@ fun HomeScreen() {
                     StatusCard(
                         modifier = Modifier.weight(1f),
                         title = "Connected",
-                        count = "2 devices",
+                        count = "${connectedDevices.size} devices",
                         iconContent = {
                             Icon(
 
@@ -212,7 +256,7 @@ fun HomeScreen() {
                     StatusCard(
                         modifier = Modifier.weight(1f),
                         title = "Disconnected",
-                        count = "1 device",
+                        count = "${disconnectedDevices.size} device",
                         iconContent = {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_dis),
@@ -223,31 +267,51 @@ fun HomeScreen() {
                         titleColor = orangeDisconnected
                     )
                 }
-
+                }
                 // Device List
-                // Connected Devices
-                DeviceSection(
-                    sectionTitle = "connected",
-                    titleColor = greenConnected,
-                    batteryLevel = 50
-                )
 
-                // Disconnected Devices
-                DeviceSection(
-                    sectionTitle = "disconnected",
-                    titleColor = orangeDisconnected,
-                    batteryLevel = 50
-                )
 
-                // Down Devices
-                DeviceSection(
-                    sectionTitle = "Down",
-                    titleColor = redDown,
-                    batteryLevel = 50
-                )
 
-                // Add extra padding at the bottom to ensure content isn't hidden behind bottom nav
-                Spacer(modifier = Modifier.height(60.dp))
+
+
+                    if (connectedDevices.isNotEmpty()) {
+                        item {
+                            DeviceSection(
+                                sectionTitle = "connected",
+                                titleColor = greenConnected,
+                                batteryLevel = 50,
+                                devices = connectedDevices,
+                                onMoreInfoClick = onMoreInfoClick
+                            )
+                        }
+                    }
+
+                    if (disconnectedDevices.isNotEmpty()) {
+                        item {
+                            DeviceSection(
+                                sectionTitle = "disconnected",
+                                titleColor = orangeDisconnected,
+                                batteryLevel = 50,
+                                devices = disconnectedDevices,
+                                onMoreInfoClick = onMoreInfoClick
+                            )
+                        }
+                    }
+
+                    if (downDevices.isNotEmpty()) {
+                        item {
+                            DeviceSection(
+                                sectionTitle = "Down",
+                                titleColor = redDown,
+                                batteryLevel = 50,
+                                devices = downDevices,
+                                onMoreInfoClick = onMoreInfoClick
+                            )
+                        }
+                    }
+
+                    item { Spacer(Modifier.height(16.dp)) }
+                }
             }
         }
     }
