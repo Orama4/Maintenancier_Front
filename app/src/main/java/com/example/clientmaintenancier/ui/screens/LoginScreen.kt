@@ -181,7 +181,7 @@ fun LoginScreen(navController: NavController) {
 
                 // Login Button
                 Button(
-                    onClick = { /* Handle Login */ },
+                    onClick = {navController.navigate(Destination.Home.route)},
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(64.dp),

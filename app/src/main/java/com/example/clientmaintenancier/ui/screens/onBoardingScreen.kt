@@ -135,7 +135,7 @@ fun OnboardingScreen(navController: NavHostController) {
             Spacer(modifier = Modifier.height(8.dp))
 
             TextButton(
-                onClick = { /* Handle Skip */ },
+                onClick = { navController.navigate("registration") },
                 modifier = Modifier.fillMaxWidth().height(64.dp),
                 shape = RoundedCornerShape(12.dp),
             ) {
