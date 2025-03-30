@@ -19,6 +19,7 @@ import com.example.clientmaintenancier.ui.screens.HomeScreen
 import com.example.clientmaintenancier.ui.screens.LoginScreen
 import com.example.clientmaintenancier.ui.screens.OnboardingScreen
 import com.example.clientmaintenancier.ui.screens.RegistrationScreen
+import com.example.clientmaintenancier.ui.screens.TaskDetailsScreen
 import com.example.clientmaintenancier.ui.screens.TasksScreen
 import com.example.clientmaintenancier.ui.screens.VerificationScreen
 import com.example.clientmaintenancier.ui.theme.ClientMaintenancierTheme

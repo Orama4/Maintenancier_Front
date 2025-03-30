@@ -3,6 +3,7 @@ package com.example.clientmaintenancier.ui.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -254,11 +255,12 @@ fun DeviceCard(device: DeviceInfo) {
 
 
 @Composable
-fun DeviceCard2(task: TaskInfo ) {
+fun DeviceCard2(task: TaskInfo ,onCardClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp),
+            .height(100.dp)
+            .clickable{ onCardClick() },
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(8.dp)
     ) {
@@ -336,9 +338,11 @@ fun DeviceSection2(
     sectionTitle: String,
     titleColor: Color,
     batteryLevel: Int,
-    onMoreInfoClick: (deviceId: Int) -> Unit,
+    tasks: List<TaskInfo>,
+    onTaskDetailsClick: (taskId: Int) -> Unit,
+    onDeviceDetailsClick: (taskId: Int) -> Unit,
     onStartMaintenanceClick: (taskId: Int) -> Unit,
-    tasks: List<TaskInfo>
+    onMoreInfoClick: (deviceId: Int) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -382,7 +386,9 @@ fun DeviceSection2(
 
         // Device Card
         tasks.forEach { task ->
-            DeviceCard2(task)
+            DeviceCard2(
+                task,
+                onCardClick = { onTaskDetailsClick(task.id)})
             //buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -390,7 +396,7 @@ fun DeviceSection2(
             ) {
                 // Button 1
                 OutlinedButton(
-                    onClick = {onMoreInfoClick },
+                    onClick = {onDeviceDetailsClick(task.id) },
                     modifier = Modifier
                         .weight(1f)
                         .padding( vertical = 16.dp),

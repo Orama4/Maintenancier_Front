@@ -27,7 +27,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.clientmaintenancier.R
+import com.example.clientmaintenancier.navigation.Destination
 import com.example.clientmaintenancier.ui.components.*
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
@@ -42,6 +44,8 @@ data class TaskInfo(
     val location: String,
     val maintenanceTime: String
 )
+
+// Modified to use NavController and handle navigation
 @Composable
 fun TasksScreen(
     notificationCount: Int,
@@ -49,9 +53,16 @@ fun TasksScreen(
     onNotificationClick: () -> Unit,
     onTaskSearch: (String) -> Unit,
     tasks: List<TaskInfo>,
-    onDeviceDetailsClick: (deviceId: Int) -> Unit,
-    onStartMaintenanceClick: (taskId: Int) -> Unit
-    ) {
+    navController: NavController, // Added navigation controller parameter
+    onDeviceDetailsClick: (deviceId: Int) -> Unit = { deviceId ->
+        // Navigate to DeviceDetails with deviceId
+        navController.navigate("${Destination.DeviceDetails.route}/$deviceId")
+    },
+    onTaskDetailsClick: (taskId: Int) -> Unit = { taskId ->
+        // Navigate to TaskDetails with taskId
+        navController.navigate("${Destination.TaskDetails.route}/$taskId")
+    }
+) {
     var searchText by remember { mutableStateOf("") }
     val primaryOrange = AppColors.primary
     val greenConnected = AppColors.green
@@ -80,7 +91,7 @@ fun TasksScreen(
                         .clickable(onClick = onMenuClick),
                     contentAlignment = Alignment.Center,
 
-                ) {
+                    ) {
 
                     Icon(
                         painter = painterResource(id = R.drawable.ic_menu),
@@ -186,65 +197,65 @@ fun TasksScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item{
-                // Status Cards Grid
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    // Total Card
-                    StatusCard(
-                        modifier = Modifier.weight(1f),
-                        title = "Total tasks",
-                        count = "${tasks.size} tasks",
-                        iconContent = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_grid),
-                                contentDescription = "Total",
-                                tint = Color.Black
+                        // Status Cards Grid
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            // Total Card
+                            StatusCard(
+                                modifier = Modifier.weight(1f),
+                                title = "Total tasks",
+                                count = "${tasks.size} tasks",
+                                iconContent = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_grid),
+                                        contentDescription = "Total",
+                                        tint = Color.Black
+                                    )
+                                }
+                            )
+
+                            // Down Card
+                            StatusCard(
+                                modifier = Modifier.weight(1f),
+                                title = "Active alers",
+                                count = "1 alert",
+                                iconContent = {
+                                    Icon(
+                                        imageVector = Icons.Default.TrendingDown,
+                                        contentDescription = "Down",
+                                        tint = redDown
+                                    )
+                                },
+                                titleColor = redDown
                             )
                         }
-                    )
 
-                    // Down Card
-                    StatusCard(
-                        modifier = Modifier.weight(1f),
-                        title = "Active alers",
-                        count = "1 alert",
-                        iconContent = {
-                            Icon(
-                                imageVector = Icons.Default.TrendingDown,
-                                contentDescription = "Down",
-                                tint = redDown
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+
+                    // Device List
+                    if (tasks.isNotEmpty()) {
+                        item {
+                            DeviceSection2(
+                                sectionTitle = "Down",
+                                titleColor = redDown,
+                                batteryLevel = 50,
+                                tasks = tasks,
+                                onTaskDetailsClick = onTaskDetailsClick,
+                                onDeviceDetailsClick = onDeviceDetailsClick,
+                                onStartMaintenanceClick = onDeviceDetailsClick,
+                                onMoreInfoClick = onDeviceDetailsClick
                             )
-                        },
-                        titleColor = redDown
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
+                        }
                     }
-
-
-                // Device List
-                if (tasks.isNotEmpty()) {
-                    item {
-                        DeviceSection2(
-                            sectionTitle = "Down",
-                            titleColor = redDown,
-                            batteryLevel = 50,
-                            tasks = tasks,
-                            onMoreInfoClick = onDeviceDetailsClick,
-                            onStartMaintenanceClick = onStartMaintenanceClick,
-
-                        )
-                    }
+                    // Add extra padding at the bottom to ensure content isn't hidden behind bottom nav
+                    item { Spacer(Modifier.height(16.dp)) }
                 }
-                // Add extra padding at the bottom to ensure content isn't hidden behind bottom nav
-                item { Spacer(Modifier.height(16.dp)) }
-            }
             }
         }
     }
 }
-
