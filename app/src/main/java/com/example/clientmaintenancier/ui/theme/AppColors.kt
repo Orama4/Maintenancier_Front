@@ -7,5 +7,8 @@ object AppColors {
     val darkBlue = Color(0xFF0D1B2A)
     val writingBlue=Color(0xFF181C2E)
     val lightBlue=Color(0xFFF0F5FA)
+    val red=Color(0xFFFF5252)
+    val orange = Color(0xFFFF8C00)
+    val green=Color(0xFF4CAF50)
     // Add more colors as needed
 }

@@ -48,13 +48,15 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.clientmaintenancier.R
+import com.example.clientmaintenancier.navigation.Destination
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForgetPasswordScreen() {
+fun ForgetPasswordScreen(navController: NavController) {
     var checkState by remember { mutableStateOf(false) }
     val textStates = remember { mutableStateListOf("", "") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -133,7 +135,7 @@ fun ForgetPasswordScreen() {
 
                     // Login Button
                     Button(
-                        onClick = { /* Handle Login */ },
+                        onClick = {navController.navigate(Destination.Verification.route)},
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp),
