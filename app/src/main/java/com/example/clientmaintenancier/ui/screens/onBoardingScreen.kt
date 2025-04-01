@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.clientmaintenancier.R
-import com.example.clientmaintenancier.navigation.Destination
+import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.ui.components.PageIndicator
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
@@ -136,7 +136,7 @@ fun OnboardingScreen(navController: NavHostController) {
             Spacer(modifier = Modifier.height(8.dp))
 
             TextButton(
-                onClick = { navController.navigate(Destination.Registration.route) },
+                onClick = { navController.navigate(Screen.Registration.route) },
                 modifier = Modifier.fillMaxWidth().height(64.dp),
                 shape = RoundedCornerShape(12.dp),
             ) {

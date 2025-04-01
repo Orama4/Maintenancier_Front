@@ -12,5 +12,7 @@ object AppColors {
     val green=Color(0xFF4CAF50)
     val grey = Color(0xFFF5F6F7)
     val writinggrey = Color(0xFF6B6E82)
+    val greyBlue = Color(0xFFA0A5BA)
+
     // Add more colors as needed
 }

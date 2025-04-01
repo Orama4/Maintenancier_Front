@@ -51,7 +51,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.clientmaintenancier.R
-import com.example.clientmaintenancier.navigation.Destination
+import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 
@@ -232,7 +232,7 @@ fun RegistrationScreen(navController: NavController) {
 
                 // Login Button
                 Button(
-                    onClick = { navController.navigate(Destination.Home.route) },
+                    onClick = { navController.navigate(Screen.Home.route) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(64.dp),
@@ -262,7 +262,7 @@ fun RegistrationScreen(navController: NavController) {
                         color = Color(0xFFFF8000),
                         fontWeight = FontWeight.Bold,
                         fontFamily = PlusJakartaSans,
-                        modifier = Modifier.clickable(onClick = { navController.navigate(Destination.Login.route) })
+                        modifier = Modifier.clickable(onClick = { navController.navigate(Screen.Login.route) })
                     )
                 }
 

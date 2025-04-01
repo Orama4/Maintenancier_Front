@@ -52,7 +52,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.clientmaintenancier.R
-import com.example.clientmaintenancier.navigation.Destination
+import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 
@@ -174,14 +174,14 @@ fun LoginScreen(navController: NavController) {
                         )
                         Text("Remember me", color = Color.Gray.copy(0.6f), fontFamily = PlusJakartaSans)
                     }
-                    Text("Forgot Password", color = Color(0xFFFF8000), fontWeight = FontWeight.Bold, fontFamily = PlusJakartaSans,modifier = Modifier.clickable(onClick = { navController.navigate(Destination.ForgotPassword.route)}))
+                    Text("Forgot Password", color = Color(0xFFFF8000), fontWeight = FontWeight.Bold, fontFamily = PlusJakartaSans,modifier = Modifier.clickable(onClick = { navController.navigate(Screen.ForgotPassword.route)}))
                 }
 
                 Spacer(modifier = Modifier.height(26.dp))
 
                 // Login Button
                 Button(
-                    onClick = {navController.navigate(Destination.Home.route)},
+                    onClick = {navController.navigate(Screen.Home.route)},
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(64.dp),
@@ -197,7 +197,7 @@ fun LoginScreen(navController: NavController) {
                 Row {
                     Text("Don't have an account?", color = Color.Gray, fontFamily = PlusJakartaSans)
                     Text(" SIGN UP", color = Color(0xFFFF8000), fontWeight = FontWeight.Bold, fontFamily = PlusJakartaSans, modifier = Modifier.clickable(onClick = { navController.navigate(
-                        Destination.Registration.route) }))
+                        Screen.Registration.route) }))
                 }
 
                 Spacer(modifier = Modifier.height(38.dp))

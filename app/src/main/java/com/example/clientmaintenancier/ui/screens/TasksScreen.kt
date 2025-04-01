@@ -28,8 +28,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.clientmaintenancier.R
-import com.example.clientmaintenancier.navigation.Destination
+import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.ui.components.*
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
@@ -56,11 +57,25 @@ fun TasksScreen(
     navController: NavController, // Added navigation controller parameter
     onDeviceDetailsClick: (deviceId: Int) -> Unit = { deviceId ->
         // Navigate to DeviceDetails with deviceId
-        navController.navigate("${Destination.DeviceDetails.route}/$deviceId")
+        navController.navigate("${Screen.DeviceDetails.route}/$deviceId")
+        {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
     },
     onTaskDetailsClick: (taskId: Int) -> Unit = { taskId ->
         // Navigate to TaskDetails with taskId
-        navController.navigate("${Destination.TaskDetails.route}/$taskId")
+        navController.navigate("${Screen.TaskDetails.route}/$taskId")
+        {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
     }
 ) {
     var searchText by remember { mutableStateOf("") }

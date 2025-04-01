@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.clientmaintenancier.R
-import com.example.clientmaintenancier.navigation.Destination
+import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 
@@ -135,7 +135,8 @@ fun ForgetPasswordScreen(navController: NavController) {
 
                     // Login Button
                     Button(
-                        onClick = {navController.navigate(Destination.Verification.route)},
+                        onClick = {navController.navigate(Screen.Verification.route)
+                                  },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp),
