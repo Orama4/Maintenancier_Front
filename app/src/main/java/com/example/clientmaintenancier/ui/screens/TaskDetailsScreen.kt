@@ -13,7 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.clientmaintenancier.R
+import com.example.clientmaintenancier.navigation.Destination
+import com.example.clientmaintenancier.ui.components.takeTask
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 
@@ -50,7 +52,7 @@ data class TaskDetails(
 )
 
 @Composable
-fun TaskDetailsScreen(taskId: Int = 0,navController: NavController) {
+fun TaskDetailsScreen(taskId: Int = 0, navController: NavController) {
     // In a real app, you would fetch task details based on taskId
     // For now, we'll use a hardcoded task for demonstration
     val task = if (taskId > 0) {
@@ -85,12 +87,33 @@ fun TaskDetailsScreen(taskId: Int = 0,navController: NavController) {
 
     val scrollState = rememberScrollState()
 
+    // State for dialog visibility
+    var showDetailsDialog by remember { mutableStateOf(false) }
+
+    // TaskDetailsDialog component
+    takeTask(
+        isVisible = showDetailsDialog,
+        onDismiss = { showDetailsDialog = false },
+        onConfirm = { date, location ->
+            // Here you would handle the task details submission
+            // For example, update the task status to IN_PROGRESS
+            // and navigate back or show a confirmation
+            showDetailsDialog = false
+            // You could navigate back or to another screen
+            navController.navigate(Destination.Tasks.route) {
+                popUpTo(Destination.Tasks.route) { inclusive = true }
+            }
+        }
+    )
 
     Column(
         modifier = Modifier.fillMaxSize().padding(top = 48.dp),
     ){
         Column(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 25.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 25.dp)
+                .verticalScroll(scrollState),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
@@ -99,7 +122,7 @@ fun TaskDetailsScreen(taskId: Int = 0,navController: NavController) {
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically,
 
-            ) {
+                ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_back),
                     contentDescription = null,
@@ -386,7 +409,7 @@ fun TaskDetailsScreen(taskId: Int = 0,navController: NavController) {
                         modifier = Modifier.padding(bottom = 30.dp)
                     ) {
                         Button(
-                            onClick = { /* Action du bouton ici */ },
+                            onClick = { showDetailsDialog = true }, // Show dialog when button is clicked
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(containerColor = AppColors.primary),
                             shape = RoundedCornerShape(8.dp)
@@ -407,25 +430,4 @@ fun TaskDetailsScreen(taskId: Int = 0,navController: NavController) {
             }
         }
     }
-}
-
-@Composable
-private fun SectionTitle(title: String) {
-    Text(
-        text = title,
-        fontFamily = PlusJakartaSans,
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(vertical = 16.dp)
-    )
-}
-
-@Composable
-private fun InfoItem(value: String, color: Color, size: TextUnit) {
-    Text(
-        text = value,
-        fontFamily = PlusJakartaSans,
-        fontSize = size,
-        color = color
-    )
 }
