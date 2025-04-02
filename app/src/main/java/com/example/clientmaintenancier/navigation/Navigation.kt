@@ -81,7 +81,7 @@ fun NavigationScreen(navController: NavHostController) {
             arguments = listOf(navArgument("taskId") { type = NavType.IntType })
         ) { backStackEntry ->
             val taskId = backStackEntry.arguments?.getInt("taskId") ?: 0
-            TaskDetailsScreen(taskId = taskId)
+            TaskDetailsScreen(taskId = taskId,navController = navController)
         }
 
         composable(
@@ -89,11 +89,10 @@ fun NavigationScreen(navController: NavHostController) {
             arguments = listOf(navArgument("deviceId") { type = NavType.IntType })
         ) { backStackEntry ->
             val deviceId = backStackEntry.arguments?.getInt("deviceId") ?: 0
-            DeviceDetailsScreen(deviceId = deviceId)
+            DeviceDetailsScreen(deviceId = deviceId,navController = navController)
         }
 
-        // Keep the original routes for backward compatibility
-        composable(Destination.TaskDetails.route) { TaskDetailsScreen() }
-        composable(Destination.DeviceDetails.route) { DeviceDetailsScreen() }
+        //composable(Destination.TaskDetails.route) { TaskDetailsScreen() }
+        //composable(Destination.DeviceDetails.route) { DeviceDetailsScreen() }
     }
 }

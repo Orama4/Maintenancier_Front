@@ -3,6 +3,7 @@ package com.example.clientmaintenancier.ui.screens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.clientmaintenancier.R
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
@@ -48,7 +50,7 @@ data class TaskDetails(
 )
 
 @Composable
-fun TaskDetailsScreen(taskId: Int = 0) {
+fun TaskDetailsScreen(taskId: Int = 0,navController: NavController) {
     // In a real app, you would fetch task details based on taskId
     // For now, we'll use a hardcoded task for demonstration
     val task = if (taskId > 0) {
@@ -94,12 +96,17 @@ fun TaskDetailsScreen(taskId: Int = 0) {
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically,
+
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_back),
                     contentDescription = null,
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(48.dp).clickable {
+                        // Navigate back when the back image is clicked
+                        navController.navigateUp()
+                    }
                 )
 
                 Text(
