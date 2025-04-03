@@ -1,9 +1,12 @@
 package com.example.clientmaintenancier.ui.screens
 
-import android.bluetooth.BluetoothClass.Device
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -13,216 +16,502 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.clientmaintenancier.R
+import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 
+
+enum class DeviceState {
+    CONNECTED,
+    DISCONNECTED,
+}
+
+enum class Connectivity {
+    active,
+    inactive,
+}
+
+data class DeviceDetails(
+    val id: Int,
+    val deviceName : String, // replace by deviceId apres
+    val status: DeviceState,
+    val lastSeen: String,
+    val battery: String,
+    val version: String,
+    val purchaseDate: String,
+    val expiryDate: String,
+    val cameraState: Connectivity,
+    val microphoneState: Connectivity,
+    val gyroscopeState: Connectivity,
+    val bluetooth: Connectivity,
+    val wifi: Connectivity,
+    val userName : String , // replace by userId apres
+    val location: String
+)
+
 @Composable
-fun DeviceDetailsScreen(deviceId: Int = 0) {
+fun DeviceDetailsScreen(deviceId: Int = 0,navController: NavController) {
     // In a real app, you would fetch task details based on taskId
     // For now, we'll use a hardcoded task for demonstration
-    val task = if (deviceId > 0) {
+    val device = if (deviceId > 0) {
         // This simulates fetching a task by ID
-        TaskInfo(
+        DeviceDetails(
             id = deviceId,
-            problem = "Battery Issue",
-            deviceId = deviceId,
-            deviceName = "Monitor",
-            status = "Down",
-            batteryLevel = 25,
-            location = "Oued Smar",
-            maintenanceTime = "21 JAN, 12:30"
+            deviceName = "Smart Glasses",
+            status = DeviceState.CONNECTED,
+            lastSeen = "12/02/2025",
+            battery = "50",
+            version = "v1.2.3",
+            purchaseDate = "12/02/2025",
+            expiryDate = "12/02/2025",
+            cameraState = Connectivity.inactive,
+            microphoneState = Connectivity.active,
+            gyroscopeState = Connectivity.active,
+            bluetooth = Connectivity.active,
+            wifi =Connectivity.active ,
+            userName = "Imene L",
+            location = "You - 49th St Los Angeles, California"
         )
     } else {
         // Fallback for when no ID is provided
-        TaskInfo(
+        DeviceDetails(
             id = 1,
-            problem = "Default Task",
-            deviceId = 1,
-            deviceName = "Unknown Device",
-            status = "Unknown",
-            batteryLevel = 50,
-            location = "Unknown Location",
-            maintenanceTime = "Unknown Time"
+            deviceName = "Smart Glasses",
+            status = DeviceState.CONNECTED,
+            lastSeen = "12/02/2025",
+            battery = "50",
+            version = "v1.2.3",
+            purchaseDate = "12/02/2025",
+            expiryDate = "12/02/2025",
+            cameraState = Connectivity.active,
+            microphoneState = Connectivity.active,
+            gyroscopeState = Connectivity.active,
+            bluetooth = Connectivity.active,
+            wifi =Connectivity.active ,
+            userName = "Imene L",
+            location = "You - 49th St Los Angeles, California"
         )
     }
 
-    val scrollState = rememberScrollState()
-
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(16.dp)
-    ) {
-        // Top Bar with Back Button
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxSize().padding(top = 48.dp)
+    ){
+        Column(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 25.dp).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
         ) {
-            IconButton(onClick = { /* Handle back navigation */ }) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back"
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically,
+
+                ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_back),
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp).clickable {
+                        // Navigate back when the back image is clicked
+                        navController.navigateUp()
+                    }
+                )
+
+                Text(
+                    text = "Device Details",
+                    modifier = Modifier.padding(8.dp),
+                    color = AppColors.darkBlue,
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Start,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = PlusJakartaSans,
                 )
             }
 
-            Text(
-                text = "Task Details",
-                fontFamily = PlusJakartaSans,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(start = 8.dp)
-            )
-        }
+            Spacer(modifier = Modifier.height(20.dp))
 
-        // Main Content
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .verticalScroll(scrollState)
-        ) {
-            // Task Status Card
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = when(task.status) {
-                        "Down" -> AppColors.red.copy(alpha = 0.1f)
-                        "Connected" -> AppColors.green.copy(alpha = 0.1f)
-                        "Disconnected" -> AppColors.orange.copy(alpha = 0.1f)
-                        else -> Color.Gray.copy(alpha = 0.1f)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+
+                Text(
+                    text = device.deviceName,
+                    fontFamily = PlusJakartaSans,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppColors.writingBlue
+                )
+
+                Text(
+                    text = when (device.status) {
+                        DeviceState.CONNECTED -> "Connected"
+                        DeviceState.DISCONNECTED -> "Disconnected"
+                    },
+                    fontFamily = PlusJakartaSans,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = when (device.status) {
+                        DeviceState.CONNECTED -> AppColors.green
+                        DeviceState.DISCONNECTED -> AppColors.red
                     }
                 )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(
-                                color = when(task.status) {
-                                    "Down" -> AppColors.red
-                                    "Connected" -> AppColors.green
-                                    "Disconnected" -> AppColors.orange
-                                    else -> Color.Gray
-                                },
-                                shape = RoundedCornerShape(8.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Warning,
-                            contentDescription = "Status",
-                            tint = Color.White
-                        )
-                    }
+            }
 
-                    Column(modifier = Modifier.padding(start = 16.dp)) {
-                        Text(
-                            text = task.status,
-                            fontFamily = PlusJakartaSans,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            color = when(task.status) {
-                                "Down" -> AppColors.red
-                                "Connected" -> AppColors.green
-                                "Disconnected" -> AppColors.orange
-                                else -> Color.Gray
-                            }
-                        )
-                        Text(
-                            text = "Status",
-                            fontFamily = PlusJakartaSans,
-                            fontSize = 14.sp,
-                            color = Color.Gray
-                        )
-                    }
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("Last seen: ")
+                        }
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Normal)) {
+                            append(device.lastSeen)
+                        }
+                    },
+                    fontFamily = PlusJakartaSans,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppColors.writingBlue
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = device.battery+"%",
+                        fontFamily = PlusJakartaSans,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AppColors.darkBlue
+                    )
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_batt),
+                        contentDescription = null,
+                        modifier = Modifier.size(30.dp)
+                    )
                 }
             }
 
-            // Task Information Section
-            SectionTitle(title = "Task Information")
+            Spacer(modifier = Modifier.height(30.dp))
 
-            InfoItem(label = "Task ID", value = "#${task.id}")
-            InfoItem(label = "Problem", value = task.problem)
-            InfoItem(label = "Device", value = task.deviceName)
-            InfoItem(label = "Device ID", value = "#${task.deviceId}")
-            InfoItem(label = "Location", value = task.location)
-            InfoItem(label = "Scheduled Time", value = task.maintenanceTime)
-            InfoItem(label = "Battery Level", value = "${task.batteryLevel}%")
 
-            // Spacer to ensure content isn't hidden behind bottom elements
-            Spacer(modifier = Modifier.height(32.dp))
-        }
+            Column {
+                Text(
+                    text = "User informations",
+                    fontFamily = PlusJakartaSans,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = AppColors.writinggrey
+                )
 
-        // Bottom Button
-        Button(
-            onClick = { /* Handle start maintenance logic */ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp)
-                .height(56.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = AppColors.primary
-            ),
-            shape = RoundedCornerShape(8.dp)
-        ) {
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.user),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(50.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Text(
+                        text = device.userName,
+                        color = AppColors.darkBlue,
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Start,
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = PlusJakartaSans
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.location2),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(20.dp)
+                    )
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Text(
+                        text = device.location,
+                        color = AppColors.darkBlue,
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Start,
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = PlusJakartaSans
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(30.dp))
+
+
+            Column {
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("Firmware Version: ")
+                        }
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Normal)) {
+                            append(device.version)
+                        }
+                    },
+                    fontFamily = PlusJakartaSans,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppColors.writingBlue
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("Purchase Date: ")
+                        }
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Normal)) {
+                            append(device.purchaseDate)
+                        }
+                    },
+                    fontFamily = PlusJakartaSans,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppColors.writingBlue
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("Warranty Expiry: ")
+                        }
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Normal)) {
+                            append(device.expiryDate)
+                        }
+                    },
+                    fontFamily = PlusJakartaSans,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppColors.writingBlue
+                )
+            }
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.glasses),
+                    contentDescription = null,
+                    modifier = Modifier.size(200.dp)
+                )
+            }
+
+            Column {
+                Text(
+                    text = "Sensors",
+                    color = AppColors.darkBlue,
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Start,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = PlusJakartaSans
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = AppColors.writingBlue)) {
+                            append("Camera:   ")
+                        }
+                        withStyle(
+                            style = SpanStyle(
+                                color = when (device.cameraState) {
+                                    Connectivity.active -> AppColors.green
+                                    Connectivity.inactive -> AppColors.red
+                                }
+                            )
+                        ) {
+                            append(
+                                when (device.cameraState) {
+                                    Connectivity.active -> "active"
+                                    Connectivity.inactive -> "inactive"
+                                }
+                            )
+                        }
+                    },
+                    fontFamily = PlusJakartaSans,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                )
+
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = AppColors.writingBlue)) {
+                            append("Microphone:   ")
+                        }
+                        withStyle(
+                            style = SpanStyle(
+                                color = when (device.microphoneState) {
+                                    Connectivity.active -> AppColors.green
+                                    Connectivity.inactive -> AppColors.red
+                                }
+                            )
+                        ) {
+                            append(
+                                when (device.microphoneState) {
+                                    Connectivity.active -> "active"
+                                    Connectivity.inactive -> "inactive"
+                                }
+                            )
+                        }
+                    },
+                    fontFamily = PlusJakartaSans,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
+
             Text(
-                text = "Start Maintenance",
+                text = buildAnnotatedString {
+                    withStyle(style = SpanStyle(color = AppColors.writingBlue)) {
+                        append("Gyroscope:   ")
+                    }
+                    withStyle(
+                        style = SpanStyle(
+                            color = when (device.gyroscopeState) {
+                                Connectivity.active -> AppColors.green
+                                Connectivity.inactive -> AppColors.red
+                            }
+                        )
+                    ) {
+                        append(
+                            when (device.gyroscopeState) {
+                                Connectivity.active -> "active"
+                                Connectivity.inactive -> "inactive"
+                            }
+                        )
+                    }
+                },
                 fontFamily = PlusJakartaSans,
-                fontWeight = FontWeight.Bold
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
             )
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+
+            Column(
+                modifier = Modifier.padding(bottom = 50.dp)
+            ) {
+                Text(
+                    text = "Connectivity",
+                    color = AppColors.darkBlue,
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Start,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = PlusJakartaSans
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = AppColors.writingBlue)) {
+                            append("Bluetooth:   ")
+                        }
+                        withStyle(
+                            style = SpanStyle(
+                                color = when (device.bluetooth) {
+                                    Connectivity.active -> AppColors.green
+                                    Connectivity.inactive -> AppColors.red
+                                }
+                            )
+                        ) {
+                            append(
+                                when (device.bluetooth) {
+                                    Connectivity.active -> "active"
+                                    Connectivity.inactive -> "inactive"
+                                }
+                            )
+                        }
+                    },
+                    fontFamily = PlusJakartaSans,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                )
+
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = AppColors.writingBlue)) {
+                            append("Wifi:   ")
+                        }
+                        withStyle(
+                            style = SpanStyle(
+                                color = when (device.wifi) {
+                                    Connectivity.active -> AppColors.green
+                                    Connectivity.inactive -> AppColors.red
+                                }
+                            )
+                        ) {
+                            append(
+                                when (device.wifi) {
+                                    Connectivity.active -> "active"
+                                    Connectivity.inactive -> "inactive"
+                                }
+                            )
+                        }
+                    },
+                    fontFamily = PlusJakartaSans,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
+
         }
+
     }
 }
 
-@Composable
-private fun SectionTitle(title: String) {
-    Text(
-        text = title,
-        fontFamily = PlusJakartaSans,
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(vertical = 16.dp)
-    )
-}
-
-@Composable
-private fun InfoItem(label: String, value: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = label,
-            fontFamily = PlusJakartaSans,
-            fontSize = 14.sp,
-            color = Color.Gray
-        )
-        Text(
-            text = value,
-            fontFamily = PlusJakartaSans,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
-        )
-    }
-    Divider(
-        modifier = Modifier.padding(top = 8.dp),
-        color = Color.LightGray.copy(alpha = 0.5f)
-    )
-}

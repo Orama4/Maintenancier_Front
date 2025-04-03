@@ -89,6 +89,7 @@ fun AnimatedBottomNavigationBar(navController: NavHostController) {
                 Screen.Home.route -> 0
                 Screen.Tasks.route -> 1
                 Screen.Main_account.route -> 2
+                Screen.TaskDetails.route->1
                 else -> 2
             }
         }

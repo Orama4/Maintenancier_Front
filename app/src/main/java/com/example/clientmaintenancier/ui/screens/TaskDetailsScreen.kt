@@ -3,6 +3,7 @@ package com.example.clientmaintenancier.ui.screens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -12,7 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,7 +25,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.clientmaintenancier.R
+import com.example.clientmaintenancier.navigation.Screen
+import com.example.clientmaintenancier.ui.components.takeTask
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 
@@ -48,7 +52,7 @@ data class TaskDetails(
 )
 
 @Composable
-fun TaskDetailsScreen(taskId: Int = 0) {
+fun TaskDetailsScreen(taskId: Int = 0, navController: NavController) {
     // In a real app, you would fetch task details based on taskId
     // For now, we'll use a hardcoded task for demonstration
     val task = if (taskId > 0) {
@@ -83,23 +87,49 @@ fun TaskDetailsScreen(taskId: Int = 0) {
 
     val scrollState = rememberScrollState()
 
+    // State for dialog visibility
+    var showDetailsDialog by remember { mutableStateOf(false) }
+
+    // TaskDetailsDialog component
+    takeTask(
+        isVisible = showDetailsDialog,
+        onDismiss = { showDetailsDialog = false },
+        onConfirm = { date, location ->
+            // Here you would handle the task details submission
+            // For example, update the task status to IN_PROGRESS
+            // and navigate back or show a confirmation
+            showDetailsDialog = false
+            // You could navigate back or to another screen
+            navController.navigate(Screen.Tasks.route) {
+                popUpTo(Screen.Tasks.route) { inclusive = true }
+            }
+        }
+    )
 
     Column(
         modifier = Modifier.fillMaxSize().padding(top = 48.dp),
     ){
         Column(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 25.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 25.dp)
+                .verticalScroll(scrollState),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start
-            ) {
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically,
+
+                ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_back),
                     contentDescription = null,
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(48.dp).clickable {
+                        // Navigate back when the back image is clicked
+                        navController.navigateUp()
+                    }
                 )
 
                 Text(
@@ -379,7 +409,7 @@ fun TaskDetailsScreen(taskId: Int = 0) {
                         modifier = Modifier.padding(bottom = 30.dp)
                     ) {
                         Button(
-                            onClick = { /* Action du bouton ici */ },
+                            onClick = { showDetailsDialog = true }, // Show dialog when button is clicked
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(containerColor = AppColors.primary),
                             shape = RoundedCornerShape(8.dp)
@@ -400,25 +430,4 @@ fun TaskDetailsScreen(taskId: Int = 0) {
             }
         }
     }
-}
-
-@Composable
-private fun SectionTitle(title: String) {
-    Text(
-        text = title,
-        fontFamily = PlusJakartaSans,
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(vertical = 16.dp)
-    )
-}
-
-@Composable
-private fun InfoItem(value: String, color: Color, size: TextUnit) {
-    Text(
-        text = value,
-        fontFamily = PlusJakartaSans,
-        fontSize = size,
-        color = color
-    )
 }

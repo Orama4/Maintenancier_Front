@@ -99,13 +99,16 @@ fun NavigationScreen(navController: NavHostController= rememberNavController()) 
             )
         }
 
-        // Updated routes with parameters
+
+        // Keep the original routes for backward compatibility
+//        composable(Screen.TaskDetails.route) { TaskDetailsScreen() }
+//        composable(Screen.DeviceDetails.route) { DeviceDetailsScreen() }
         composable(
             route = "${Screen.TaskDetails.route}/{taskId}",
             arguments = listOf(navArgument("taskId") { type = NavType.IntType })
         ) { backStackEntry ->
             val taskId = backStackEntry.arguments?.getInt("taskId") ?: 0
-            TaskDetailsScreen(taskId = taskId)
+            TaskDetailsScreen(taskId = taskId,navController = navController)
         }
 
         composable(
@@ -113,12 +116,11 @@ fun NavigationScreen(navController: NavHostController= rememberNavController()) 
             arguments = listOf(navArgument("deviceId") { type = NavType.IntType })
         ) { backStackEntry ->
             val deviceId = backStackEntry.arguments?.getInt("deviceId") ?: 0
-            DeviceDetailsScreen(deviceId = deviceId)
+            DeviceDetailsScreen(deviceId = deviceId,navController = navController)
         }
 
-        // Keep the original routes for backward compatibility
-        composable(Screen.TaskDetails.route) { TaskDetailsScreen() }
-        composable(Screen.DeviceDetails.route) { DeviceDetailsScreen() }
+
+
 
         composable(Screen.Main_account.route) {
             AccountMainScreen(navController = navController)
