@@ -14,6 +14,8 @@ import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +32,7 @@ import com.example.clientmaintenancier.R
 import com.example.clientmaintenancier.ui.components.*
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
+import com.example.clientmaintenancier.viewmodels.DeviceViewModel
 
 enum class DeviceStatus(val displayName: String) {
     CONNECTED("Connected"),
@@ -44,7 +47,191 @@ data class DeviceInfo(
     val status: DeviceStatus,
     val imageUrl: String? = null
 )
+
+val primaryOrange = AppColors.primary
+val greenConnected = AppColors.green
+val redDown = AppColors.red
+val orangeDisconnected = AppColors.orange
+val lightBeige = Color(0xFFFFF0D9)
+val grayBackground = Color(0xFFF5F5F5)
+
+
 @Composable
+fun HomeScreen(
+    viewModel: DeviceViewModel,
+    onUserSearch: (String) -> Unit,
+    onMoreInfoClick: (deviceId: Int) -> Unit,
+    onNotificationClick: () -> Unit,
+    onMenuClick: () -> Unit,
+    notificationCount: Int,
+    username: String = "Abla"
+) {
+    val stats by viewModel.stats.collectAsState()
+    val isLoading by viewModel.loading.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchDeviceStats()
+    }
+
+    Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        when {
+            isLoading -> {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
+
+            error != null -> {
+                Text(
+                    text = error ?: "",
+                    color = Color.Red,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+
+            stats != null -> {
+                val total = stats?.totalDevices ?: 0
+                val connected = stats?.connectedDevices ?: 0
+                val disconnected = stats?.disconnectedDevices ?: 0
+                val down = stats?.enPanneDevices ?: 0
+
+                Column {
+                    HeaderSection(
+                        username = username,
+                        notificationCount = notificationCount,
+                        onNotificationClick = onNotificationClick,
+                        onMenuClick = onMenuClick
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        StatusCard(
+                            modifier = Modifier.weight(1f),
+                            title = "Total",
+                            count = "$total devices",
+                            iconContent = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_grid),
+                                    contentDescription = "Total",
+                                    tint = Color.Black
+                                )
+                            },
+                            backgroundColor = lightBeige
+                        )
+
+                        StatusCard(
+                            modifier = Modifier.weight(1f),
+                            title = "Down",
+                            count = "$down devices",
+                            iconContent = {
+                                Icon(
+                                    imageVector = Icons.Default.TrendingDown,
+                                    contentDescription = "Down",
+                                    tint = redDown
+                                )
+                            },
+                            titleColor = redDown
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        StatusCard(
+                            modifier = Modifier.weight(1f),
+                            title = "Connected",
+                            count = "$connected devices",
+                            iconContent = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_conn),
+                                    contentDescription = "Connected",
+                                    tint = greenConnected
+                                )
+                            },
+                            titleColor = greenConnected
+                        )
+
+                        StatusCard(
+                            modifier = Modifier.weight(1f),
+                            title = "Disconnected",
+                            count = "$disconnected devices",
+                            iconContent = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_dis),
+                                    contentDescription = "Disconnected",
+                                    tint = orangeDisconnected
+                                )
+                            },
+                            titleColor = orangeDisconnected
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = "Most Reported Devices",
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HeaderSection(
+    username: String,
+    notificationCount: Int,
+    onNotificationClick: () -> Unit,
+    onMenuClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(text = "Welcome,")
+            Text(
+                text = username,
+            )
+        }
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onNotificationClick) {
+                BadgedBox(
+                    badge = {
+                        if (notificationCount > 0) {
+                            Badge { Text(text = notificationCount.toString()) }
+                        }
+                    }
+                ) {
+                    Icon(Icons.Default.Notifications, contentDescription = "Notifications")
+                }
+            }
+
+            IconButton(onClick = onMenuClick) {
+                Icon(Icons.Default.Menu, contentDescription = "Menu")
+            }
+        }
+    }
+}
+
+
+/*@Composable
 fun HomeScreen(
     username: String = "Abla",
     devices: List<DeviceInfo>,
@@ -315,5 +502,5 @@ fun HomeScreen(
             }
         }
     }
-}
+}*/
 

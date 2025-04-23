@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -22,8 +23,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.clientmaintenancier.api.RetrofitClient
 import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.navigation.NavigationScreen
+import com.example.clientmaintenancier.repositories.DeviceRepository
 import com.example.clientmaintenancier.ui.screens.ForgetPasswordScreen
 import com.example.clientmaintenancier.ui.screens.HomeScreen
 import com.example.clientmaintenancier.ui.screens.LoginScreen
@@ -33,14 +36,18 @@ import com.example.clientmaintenancier.ui.screens.TaskDetailsScreen
 import com.example.clientmaintenancier.ui.screens.TasksScreen
 import com.example.clientmaintenancier.ui.screens.VerificationScreen
 import com.example.clientmaintenancier.ui.theme.ClientMaintenancierTheme
+import com.example.clientmaintenancier.viewmodels.DeviceViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        val apiService = RetrofitClient.apiService
+        val repository = DeviceRepository(apiService)
+
         setContent {
-            ClientMaintenancierTheme  {
+            ClientMaintenancierTheme {
                 val navController = rememberNavController()
                 Box(
                     modifier = Modifier
@@ -48,9 +55,9 @@ class MainActivity : ComponentActivity() {
                         .background(Color(0xFFF5F5F5))
                         .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
                 ) {
-                    NavigationScreen(navController)
+                    // Pass the repository, not viewModel
+                    NavigationScreen(navController, repository)
                     AnimatedBottomNavigationBar(navController)
-
                 }
             }
         }
