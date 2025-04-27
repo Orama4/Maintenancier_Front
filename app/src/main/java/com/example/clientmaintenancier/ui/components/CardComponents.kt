@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -36,8 +37,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clientmaintenancier.R
-import com.example.clientmaintenancier.ui.screens.DeviceInfo
-import com.example.clientmaintenancier.ui.screens.TaskInfo
+import com.example.clientmaintenancier.entities.device
+import com.example.clientmaintenancier.entities.task
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 
@@ -96,80 +97,15 @@ fun StatusCard(
 }
 
 
-@Composable
-fun DeviceSection(
-    sectionTitle: String,
-    titleColor: Color,
-    batteryLevel: Int,
-    devices: List<DeviceInfo>,
-    onMoreInfoClick: (deviceId: Int) -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp)
-    ) {
-        // Section Title with Battery
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = sectionTitle,
-                color = titleColor,
-                fontFamily = PlusJakartaSans,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            // Battery Indicator
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "$batteryLevel%",
-                    fontSize = 14.sp,
-                    fontFamily = PlusJakartaSans,
-                    color = Color.DarkGray,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_batt),
-                    contentDescription = "Battery",
-                    modifier = Modifier.size(24.dp),
-                    tint = Color.DarkGray
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Device Card
-        devices.forEach { device ->
-            DeviceCard(device)
-            InfoButton(onMoreInfoClick)
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-        // Ligne de séparation
-        Divider(
-            modifier = Modifier
-                .fillMaxWidth()
-            ,
-            color = Color(0xFFE0E0E0),
-            thickness = 1.dp
-        )
-    }
-}
 
 @Composable
-fun InfoButton(onMoreInfoClick: (deviceId: Int) -> Unit) {
-    // Bouton "More infos"
+fun InfoButton(deviceId: Int,onMoreInfoClick: (deviceId: Int) -> Unit, text :String) {
     OutlinedButton(
-        onClick = { onMoreInfoClick},
+        onClick = { onMoreInfoClick(deviceId) },
         modifier = Modifier
             .fillMaxWidth()
-            .padding( vertical = 16.dp),
+            //.padding( vertical = 16.dp)
+        ,
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(1.dp, Color(0xFFFF8C00)),
         colors = ButtonDefaults.outlinedButtonColors(
@@ -177,16 +113,53 @@ fun InfoButton(onMoreInfoClick: (deviceId: Int) -> Unit) {
         )
     ) {
         Text(
-            text = "More infos",
+            text = text,
             fontSize = 16.sp,
             fontFamily = PlusJakartaSans,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            color = AppColors.primary
+
         )
     }
 }
 
 @Composable
-fun DeviceCard(device: DeviceInfo) {
+fun HistoryButton(onHistoryClick: (deviceId: Int) -> Unit) {
+    // Bouton "History"
+    OutlinedButton(
+        onClick = {onHistoryClick},
+        modifier = Modifier
+            .fillMaxWidth()
+            //.padding( vertical = 16.dp)
+        ,
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, Color(0xFFFF8C00)),
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = AppColors.primary
+        )
+    ) {
+        Text(
+            text = "History",
+            fontSize = 16.sp,
+            fontFamily = PlusJakartaSans,
+            fontWeight = FontWeight.SemiBold,
+            color = AppColors.primary
+
+        )
+    }
+}
+
+
+@Composable
+fun DeviceCard(device: device) {
+    val color = when (device.status) {
+        "Actif" -> Color(0xFF4CAF50)        // Green
+        "Banne" -> Color(0xFFFF9800)         // Orange
+        "Hors_service" -> Color.Red
+        "Defectueux" -> Color(0xFFF44336)    // Darker Red
+        "En_maintenance" -> Color(0xFF2196F3) // Blue
+        else -> Color.Gray
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -213,7 +186,7 @@ fun DeviceCard(device: DeviceInfo) {
             // Device Info
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = device.name,
+                    text = device.nom,
                     fontSize = 16.sp,
                     fontFamily = PlusJakartaSans,
                     fontWeight = FontWeight.Bold
@@ -224,23 +197,24 @@ fun DeviceCard(device: DeviceInfo) {
                 // Location Row
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Default.LocationOn,
+                        imageVector = Icons.Default.Wifi,
                         contentDescription = "Location",
                         modifier = Modifier.size(16.dp),
-                        tint = Color.DarkGray
+                        tint = color
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = device.location,
+                        text = device.status,
                         fontSize = 14.sp,
                         fontFamily = PlusJakartaSans,
-                        color = Color.DarkGray
+                        color = color
+
                     )
 
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Text(
-                        text = device.timestamp,
+                        text = device.macAdresse,
                         fontSize = 12.sp,
                         fontFamily = PlusJakartaSans,
                         color = Color.Gray
@@ -255,7 +229,21 @@ fun DeviceCard(device: DeviceInfo) {
 
 
 @Composable
-fun DeviceCard2(task: TaskInfo ,onCardClick: () -> Unit) {
+fun DeviceCard2(task: task, onCardClick: () -> Unit) {
+    val textColor = when (task.type) {
+        "preventive" -> AppColors.primary // Green color
+        "curative" -> AppColors.red // Red color
+        else -> Color.Black // Default color
+    }
+
+    val color = when (task.device.status) {
+        "Actif" -> Color(0xFF4CAF50)        // Green
+        "Banne" -> Color(0xFFFF9800)         // Orange
+        "Hors_service" -> Color.Red
+        "Defectueux" -> Color(0xFFF44336)    // Darker Red
+        "En_maintenance" -> Color(0xFF2196F3) // Blue
+        else -> Color.Gray
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -280,52 +268,43 @@ fun DeviceCard2(task: TaskInfo ,onCardClick: () -> Unit) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Device Info
+            // Task Info
             Column(modifier = Modifier.weight(1f)) {
-                Row (Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
+                Text(
+                    text = task.device.nom ?: "Unknown Device",
+                    fontSize = 16.sp,
+                    fontFamily = PlusJakartaSans,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Row (Modifier.fillMaxWidth().padding(end = 16.dp),horizontalArrangement = Arrangement.SpaceBetween) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Wifi,
+                            contentDescription = "Location",
+                            modifier = Modifier.size(16.dp),
+                            tint = color
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = task.device.status ?: "Unknown Status",
+                            fontSize = 14.sp,
+                            fontFamily = PlusJakartaSans,
+                            fontWeight = FontWeight.Medium,
+                            color = color
+                        )
+                    }
                     Text(
-                        text = task.deviceName,
-                        fontSize = 16.sp,
-                        fontFamily = PlusJakartaSans,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = task.problem,
+                        text = task.type,
                         fontSize = 12.sp,
                         fontFamily = PlusJakartaSans,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        color = textColor
                     )
-
                 }
 
 
                 Spacer(modifier = Modifier.height(4.dp))
-
-                // Location Row
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.LocationOn,
-                        contentDescription = "Location",
-                        modifier = Modifier.size(16.dp),
-                        tint = Color.DarkGray
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = task.location,
-                        fontSize = 14.sp,
-                        fontFamily = PlusJakartaSans,
-                        color = Color.DarkGray
-                    )
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Text(
-                        text =task.maintenanceTime,
-                        fontSize = 12.sp,
-                        fontFamily = PlusJakartaSans,
-                        color = Color.Gray
-                    )
-                }
             }
         }
 
@@ -334,13 +313,59 @@ fun DeviceCard2(task: TaskInfo ,onCardClick: () -> Unit) {
 }
 
 @Composable
-fun DeviceSection2(
+fun DeviceSection(
     sectionTitle: String,
     titleColor: Color,
-    batteryLevel: Int,
-    tasks: List<TaskInfo>,
+    devices: List<device>,
+    onMoreInfoClick: (deviceId: Int) -> Unit,
+    onHistoryClick: (deviceId: Int) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp)
+    ) {
+        Column {
+            Text(
+                text = "List of devices",
+                //color = AppColors.darkBlue,
+                fontFamily = PlusJakartaSans,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Device Card
+        devices.forEach { device ->
+            DeviceCard(device)
+            InfoButton(
+                deviceId = device.id,
+                onMoreInfoClick = onMoreInfoClick,
+                "More Info"
+            )
+            HistoryButton(onHistoryClick)
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+        // Ligne de séparation
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth()
+            ,
+            color = Color(0xFFE0E0E0),
+            thickness = 1.dp
+        )
+    }
+}
+
+
+@Composable
+fun DeviceSection2(
+    tasks: List<task>,
     onTaskDetailsClick: (taskId: Int) -> Unit,
-    onDeviceDetailsClick: (taskId: Int) -> Unit,
+    onDeviceDetailsClick: (deviceId: Int) -> Unit,
     onStartMaintenanceClick: (taskId: Int) -> Unit,
     onMoreInfoClick: (deviceId: Int) -> Unit,
 ) {
@@ -349,42 +374,19 @@ fun DeviceSection2(
             .fillMaxWidth()
             .padding(vertical = 16.dp)
     ) {
-        // Section Title with Battery
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+
+        Column {
             Text(
-                text = sectionTitle,
-                color = titleColor,
+                text = "List of tasks",
                 fontFamily = PlusJakartaSans,
-                fontSize = 16.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.SemiBold
             )
-
-            // Battery Indicator
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "$batteryLevel%",
-                    fontSize = 14.sp,
-                    fontFamily = PlusJakartaSans,
-                    color = Color.DarkGray,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_batt),
-                    contentDescription = "Battery",
-                    modifier = Modifier.size(24.dp),
-                    tint = Color.DarkGray
-                )
-            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Device Card
+        // task Card
         tasks.forEach { task ->
             DeviceCard2(
                 task,
@@ -394,48 +396,11 @@ fun DeviceSection2(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                // Button 1
-                OutlinedButton(
-                    onClick = {onDeviceDetailsClick(task.id) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding( vertical = 16.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, Color(0xFFFF8C00)),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = AppColors.primary
-                    )
-                ) {
-                    Text(
-                        text = "Device details",
-                        fontSize = 12.sp,
-                        fontFamily = PlusJakartaSans,
-                        fontWeight = FontWeight.SemiBold,
-                        textAlign = TextAlign.Center
-                    )
-                }
-
-                // Button 2
-                OutlinedButton(
-                    onClick = { onStartMaintenanceClick},
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding( vertical = 16.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, Color(0xFFFF8C00)),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color.White,
-                        containerColor = AppColors.primary
-                    )
-                ) {
-                    Text(
-                        text = "Start maintenance",
-                        fontSize = 12.sp,
-                        fontFamily = PlusJakartaSans,
-                        fontWeight = FontWeight.SemiBold,
-                        textAlign = TextAlign.Center
-                    )
-                }
+                InfoButton(
+                    deviceId = task.deviceId,
+                    onMoreInfoClick = onMoreInfoClick,
+                    "device details"
+                )
             }
 
         }

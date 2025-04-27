@@ -27,6 +27,7 @@ import com.example.clientmaintenancier.api.RetrofitClient
 import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.navigation.NavigationScreen
 import com.example.clientmaintenancier.repositories.DeviceRepository
+import com.example.clientmaintenancier.repositories.TaskRepository
 import com.example.clientmaintenancier.ui.screens.ForgetPasswordScreen
 import com.example.clientmaintenancier.ui.screens.HomeScreen
 import com.example.clientmaintenancier.ui.screens.LoginScreen
@@ -44,7 +45,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val apiService = RetrofitClient.apiService
-        val repository = DeviceRepository(apiService)
+        val deviceRepository = DeviceRepository(apiService)
+        val TaskRepository = TaskRepository(apiService)
+
 
         setContent {
             ClientMaintenancierTheme {
@@ -56,7 +59,7 @@ class MainActivity : ComponentActivity() {
                         .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
                 ) {
                     // Pass the repository, not viewModel
-                    NavigationScreen(navController, repository)
+                    NavigationScreen(navController, deviceRepository,TaskRepository)
                     AnimatedBottomNavigationBar(navController)
                 }
             }

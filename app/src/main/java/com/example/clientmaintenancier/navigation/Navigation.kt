@@ -24,6 +24,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.clientmaintenancier.repositories.DeviceRepository
+import com.example.clientmaintenancier.repositories.TaskRepository
 import com.example.clientmaintenancier.ui.screens.DeviceDetailsScreen
 import com.example.clientmaintenancier.ui.screens.ForgetPasswordScreen
 import com.example.clientmaintenancier.ui.screens.HomeScreen
@@ -36,6 +37,8 @@ import com.example.clientmaintenancier.ui.screens.TasksScreen
 import com.example.clientmaintenancier.ui.screens.VerificationScreen
 import com.example.clientmaintenancier.viewmodels.DeviceViewModel
 import com.example.clientmaintenancier.viewmodels.DeviceViewModelFactory
+import com.example.clientmaintenancier.viewmodels.TaskViewModel
+import com.example.clientmaintenancier.viewmodels.TaskViewModelFactory
 import getSampleFaqs
 
 
@@ -74,21 +77,64 @@ sealed class Screen(val route: String) {
 @Composable
 fun NavigationScreen(
     navController: NavHostController,
-    repository: DeviceRepository
+    deviceRepository: DeviceRepository,
+    taskRepository: TaskRepository,
+
 ) {
     NavHost(navController, startDestination = Screen.Home.route) {
         composable(Screen.Home.route) {
             val viewModel: DeviceViewModel = viewModel(
-                factory = DeviceViewModelFactory(repository)
+                factory = DeviceViewModelFactory(deviceRepository)
             )
             HomeScreen(
+                maintainerId = 15,
                 viewModel = viewModel,
                 onUserSearch = {},
-                onMoreInfoClick = { _ -> },
+                onHistoryClick = { _ -> },
                 onNotificationClick = {},
                 onMenuClick = {},
-                notificationCount = 2
+                notificationCount = 2,
+                username = "Abla",
+                navController = navController
+
             )
+        }
+
+        composable(Screen.Tasks.route) {
+            val viewModel: TaskViewModel = viewModel(
+                factory = TaskViewModelFactory(taskRepository)
+            )
+            TasksScreen(
+                maintainerId = 15,
+                viewModel = viewModel,
+                notificationCount = 3,
+                onMenuClick = { },
+                onNotificationClick = { },
+                onTaskSearch = {},
+                navController = navController
+            )
+        }
+
+        composable(
+            route = "${Screen.TaskDetails.route}/{taskId}",
+            arguments = listOf(navArgument("taskId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val taskId = backStackEntry.arguments?.getInt("taskId") ?: 0
+            val viewModel: TaskViewModel = viewModel(
+                factory = TaskViewModelFactory(taskRepository)
+            )
+            TaskDetailsScreen(taskId = taskId,navController = navController,viewModel = viewModel)
+        }
+
+        composable(
+            route = "${Screen.DeviceDetails.route}/{deviceId}",
+            arguments = listOf(navArgument("deviceId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val deviceId = backStackEntry.arguments?.getInt("deviceId") ?: 0
+            val viewModel: DeviceViewModel = viewModel(
+                factory = DeviceViewModelFactory(deviceRepository)
+            )
+            DeviceDetailsScreen(deviceId = deviceId,navController = navController,viewModel)
         }
     }
 }

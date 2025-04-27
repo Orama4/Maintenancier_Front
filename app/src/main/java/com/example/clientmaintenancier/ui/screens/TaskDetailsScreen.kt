@@ -31,63 +31,26 @@ import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.ui.components.takeTask
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
+import com.example.clientmaintenancier.viewmodels.TaskViewModel
 
-enum class TaskState {
-    IN_PROGRESS,
-    EN_PANNE,
-    COMPLETED
-}
 
-data class TaskDetails(
-    val id: Int,
-    val status: TaskState,
-    val estimatedCompletionTime: String,
-    val date: String,
-    val priority: String,
-    val problem: String,
-    val deviceName : String, // replace by deviceId apres
-    val description : String,
-    val userName : String , // replace by userId apres
-    val location: String,
-)
 
 @Composable
-fun TaskDetailsScreen(taskId: Int = 0, navController: NavController) {
-    // In a real app, you would fetch task details based on taskId
-    // For now, we'll use a hardcoded task for demonstration
-    val task = if (taskId > 0) {
-        // This simulates fetching a task by ID
-        TaskDetails(
-            id = taskId,
-            status = TaskState.EN_PANNE,
-            estimatedCompletionTime = "3h",
-            date = "10/03/2025",
-            priority = "High",
-            problem = "Battery Replacement",
-            deviceName = "Monitor",
-            description = "Replace the battery of Device 123, which is currently at 10% and causing frequent disconnections.",
-            userName = "Imene L",
-            location = "You - 49th St Los Angeles, California",
-        )
-    } else {
-        // Fallback for when no ID is provided
-        TaskDetails(
-            id = 1,
-            status = TaskState.COMPLETED,
-            estimatedCompletionTime = "3h",
-            date = "10/03/2025",
-            priority = "Medium",
-            problem = "Battery Issue",
-            deviceName = "Monitor",
-            description = "Replace the battery of Device 123, which is currently at 10% and causing frequent disconnections.",
-            userName = "John doe",
-            location = "You - 49th St Los Angeles, California",
-        )
+fun TaskDetailsScreen(
+    taskId: Int,
+    navController: NavController,
+    viewModel: TaskViewModel
+) {
+    val task by viewModel.intervention
+    val loading by viewModel.loading2.collectAsState()
+    val error by viewModel.error2.collectAsState()
+
+    LaunchedEffect(taskId) {
+        viewModel.fetchInterventionById(taskId)
     }
 
-    val scrollState = rememberScrollState()
 
-    // State for dialog visibility
+    val scrollState = rememberScrollState()
     var showDetailsDialog by remember { mutableStateOf(false) }
 
     // TaskDetailsDialog component
@@ -106,328 +69,344 @@ fun TaskDetailsScreen(taskId: Int = 0, navController: NavController) {
         }
     )
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(top = 48.dp),
-    ){
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 25.dp)
-                .verticalScroll(scrollState),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically,
 
-                ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_back),
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp).clickable {
-                        // Navigate back when the back image is clicked
-                        navController.navigateUp()
-                    }
-                )
-
+    Box(modifier = Modifier.fillMaxSize()) {
+        when {
+            loading -> {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
+            error != null -> {
                 Text(
-                    text = "Task Details",
-                    modifier = Modifier.padding(8.dp),
-                    color = AppColors.darkBlue,
-                    fontSize = 18.sp,
-                    textAlign = TextAlign.Start,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = PlusJakartaSans,
+                    text = "Error: $error",
+                    color = Color.Red,
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ){
-                Column(){
-                    Text(
-                        text = "Task #"+task.id,
-                        fontFamily = PlusJakartaSans,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppColors.writingBlue
-                    )
-                    Text(
-                        text = task.date,
-                        fontFamily = PlusJakartaSans,
-                        fontSize = 12.sp,
-                        color = AppColors.writingBlue
-                    )
-                }
-
-                Row(){
-                    Box(
-                        modifier = Modifier
-                            .background(AppColors.grey, shape = RoundedCornerShape(8.dp))
-                            .padding(horizontal = 16.dp, vertical = 8.dp) // Adds spacing inside the box
-                            .wrapContentSize(), // Ensures Box expands with text
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = task.estimatedCompletionTime,
-                            fontFamily = PlusJakartaSans,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = AppColors.writingBlue
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(10.dp))
-
-
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                color = when (task.status) {
-                                    TaskState.EN_PANNE -> AppColors.red
-                                    TaskState.COMPLETED -> AppColors.green
-                                    TaskState.IN_PROGRESS -> AppColors.primary
-                                    else -> Color.Gray
-                                },
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .wrapContentSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = when (task.status) {
-                                TaskState.EN_PANNE -> "En panne"
-                                TaskState.COMPLETED -> "Completed"
-                                TaskState.IN_PROGRESS -> "In progress"
-                            },
-                            fontFamily = PlusJakartaSans,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.White
-                        )
-                    }
-                }
+            task == null -> {
+                Text(
+                    text = "No task data received",
+                    color = Color.Red,
+                    modifier = Modifier.align(Alignment.Center)
+                )
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Column {
-                Column {
-                    Text(
-                        text = task.priority + " priority",
-                        fontFamily = PlusJakartaSans,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = AppColors.red
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = task.problem,
-                        fontFamily = PlusJakartaSans,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = AppColors.writingBlue
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Column {
-                    Text(
-                        text = "Device name",
-                        fontFamily = PlusJakartaSans,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = AppColors.writinggrey
-                    )
-
-                    Text(
-                        text = task.deviceName,
-                        fontFamily = PlusJakartaSans,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = AppColors.writingBlue
-                    )
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Column {
-                    Text(
-                        text = "Description",
-                        fontFamily = PlusJakartaSans,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = AppColors.writinggrey
-                    )
-
-                    Text(
-                        text = task.description,
-                        fontFamily = PlusJakartaSans,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = AppColors.writingBlue
-                    )
-
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Column {
-                    Text(
-                        text = "User informations",
-                        fontFamily = PlusJakartaSans,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = AppColors.writinggrey
-                    )
-
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.user),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Text(
-                            text = task.userName,
-                            color = AppColors.darkBlue,
-                            fontSize = 14.sp,
-                            textAlign = TextAlign.Start,
-                            fontWeight = FontWeight.Medium,
-                            fontFamily = PlusJakartaSans
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.calendar),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(20.dp)
-                        )
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Text(
-                            text = task.date,
-                            color = AppColors.darkBlue,
-                            fontSize = 14.sp,
-                            textAlign = TextAlign.Start,
-                            fontWeight = FontWeight.SemiBold,
-                            fontFamily = PlusJakartaSans
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.location2),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(20.dp)
-                        )
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Text(
-                            text = task.location,
-                            color = AppColors.darkBlue,
-                            fontSize = 14.sp,
-                            textAlign = TextAlign.Start,
-                            fontWeight = FontWeight.Medium,
-                            fontFamily = PlusJakartaSans
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.weight(1f)) // Pushes button to bottom
-
-            // Conditional button display based on task status
-            when (task.status) {
-                TaskState.IN_PROGRESS -> {
+            else -> {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(top = 48.dp).verticalScroll(rememberScrollState()),
+                ) {
                     Column(
-                        modifier = Modifier.padding(bottom = 30.dp)
+                        modifier = Modifier
+                            .padding(horizontal = 25.dp),
+                        verticalArrangement = Arrangement.Top,
+                        horizontalAlignment = Alignment.Start
                     ) {
-                        OutlinedButton(
-                            onClick = { /* Action du bouton ici */ },
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = AppColors.green
-                            ),
-                            border = BorderStroke(1.dp, AppColors.green),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically,
+
+                            ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_back),
+                                contentDescription = null,
+                                modifier = Modifier.size(48.dp).clickable {
+                                    navController.navigate(Screen.Tasks.route) {
+                                        popUpTo(Screen.Tasks.route) { inclusive = false }
+                                    }
+                                }
+                            )
+
                             Text(
-                                text = "Mark completed",
-                                fontSize = 14.sp,
+                                text = "Task Details",
+                                modifier = Modifier.padding(8.dp),
+                                color = AppColors.darkBlue,
+                                fontSize = 18.sp,
+                                textAlign = TextAlign.Start,
                                 fontWeight = FontWeight.SemiBold,
                                 fontFamily = PlusJakartaSans,
-                                color = AppColors.green
                             )
                         }
-                    }
-                }
-                TaskState.EN_PANNE -> {
-                    Column(
-                        modifier = Modifier.padding(bottom = 30.dp)
-                    ) {
-                        Button(
-                            onClick = { showDetailsDialog = true }, // Show dialog when button is clicked
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = AppColors.primary),
-                            shape = RoundedCornerShape(8.dp)
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "Take task",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                fontFamily = PlusJakartaSans,
-                                color = Color.White
-                            )
+                            Column() {
+                                Text(
+                                    text = "Task #" + task?.id,
+                                    fontFamily = PlusJakartaSans,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AppColors.writingBlue
+                                )
+                                Text(
+                                    text = task!!.type,
+                                    fontFamily = PlusJakartaSans,
+                                    fontSize = 12.sp,
+                                    color = AppColors.writingBlue
+                                )
+                            }
+
+                            Row() {
+                                Box(
+                                    modifier = Modifier
+                                        .background(AppColors.grey, shape = RoundedCornerShape(8.dp))
+                                        .padding(
+                                            horizontal = 16.dp,
+                                            vertical = 8.dp
+                                        ) // Adds spacing inside the box
+                                        .wrapContentSize(), // Ensures Box expands with text
+                                    contentAlignment = Alignment.Center
+                                ) {
+
+                                }
+
+                                Spacer(modifier = Modifier.width(10.dp))
+
+
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            color = when (task?.status) {
+                                                "en_panne" -> AppColors.red
+                                                "complete" -> AppColors.green
+                                                "en_progres" -> AppColors.primary
+                                                else -> Color.Gray
+                                            },
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                                        .wrapContentSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = when (task?.status) {
+                                            "en_panne" -> "En panne"
+                                            "complete" -> "Completed"
+                                            "en_progres" -> "In progress"
+                                            else -> "Not available"
+                                        },
+                                        fontFamily = PlusJakartaSans,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color.White
+                                    )
+                                }
+                            }
                         }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Column {
+                            Column {
+                                Text(
+                                    text = task?.priority?.plus(" priority") ?: "Low priority",
+                                    fontFamily = PlusJakartaSans,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AppColors.red
+                                )
+
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = when (task?.isRemote) {
+                                        true -> "Remote"
+                                        false -> "On site"
+                                        null -> ""
+                                    },
+                                    fontFamily = PlusJakartaSans,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AppColors.red
+                                )
+
+                            }
+
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            Column {
+                                Text(
+                                    text = "Device name",
+                                    fontFamily = PlusJakartaSans,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = AppColors.writinggrey
+                                )
+
+                                Text(
+                                    text = task!!.device.nom,
+                                    fontFamily = PlusJakartaSans,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AppColors.writingBlue
+                                )
+
+                                Spacer(modifier = Modifier.height(20.dp))
+
+                                Text(
+                                    text = "Device status",
+                                    fontFamily = PlusJakartaSans,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = AppColors.writinggrey
+                                )
+
+                                Text(
+                                    text = task!!.device.status,
+                                    fontFamily = PlusJakartaSans,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AppColors.writingBlue
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            Column {
+                                Text(
+                                    text = "Description",
+                                    fontFamily = PlusJakartaSans,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = AppColors.writinggrey
+                                )
+
+                                Text(
+                                    text = task!!.description ?: "No description available yet",
+                                    fontFamily = PlusJakartaSans,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AppColors.writingBlue
+                                )
+
+                            }
+
+                            Spacer(modifier = Modifier.height(20.dp))
+
+
+                            Column {
+                                Text(
+                                    text = "User informations",
+                                    fontFamily = PlusJakartaSans,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = AppColors.writinggrey
+                                )
+
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Start,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Email:" + task!!.device.email ?: "No email available",
+                                        color = AppColors.darkBlue,
+                                        fontSize = 14.sp,
+                                        textAlign = TextAlign.Start,
+                                        fontWeight = FontWeight.Medium,
+                                        fontFamily = PlusJakartaSans
+                                    )
+                                }
+
+
+                                Spacer(modifier = Modifier.height(20.dp))
+
+                                Text(
+                                    text = "Plan date",
+                                    fontFamily = PlusJakartaSans,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = AppColors.writinggrey
+                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Start,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.calendar),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                    )
+
+                                    Spacer(modifier = Modifier.width(12.dp))
+
+                                    Text(
+                                        text = task!!.planDate ?: "No plan date available yet",
+                                        color = AppColors.darkBlue,
+                                        fontSize = 14.sp,
+                                        textAlign = TextAlign.Start,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontFamily = PlusJakartaSans
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(40.dp)) // Pushes button to bottom
+
+                        // Conditional button display based on task status
+                        when (task?.status) {
+                            "en_progres" -> {
+                                Column(
+                                    modifier = Modifier.padding(bottom = 30.dp)
+                                ) {
+                                    OutlinedButton(
+                                        onClick = { /* Action du bouton ici */ },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.outlinedButtonColors(
+                                            contentColor = AppColors.green
+                                        ),
+                                        border = BorderStroke(1.dp, AppColors.green),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Text(
+                                            text = "Mark completed",
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontFamily = PlusJakartaSans,
+                                            color = AppColors.green
+                                        )
+                                    }
+                                }
+                            }
+
+                            "en_panne" -> {
+                                Column(
+                                    modifier = Modifier.padding(bottom = 30.dp)
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            showDetailsDialog = true
+                                        }, // Show dialog when button is clicked
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(containerColor = AppColors.primary),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Text(
+                                            text = "Take task",
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontFamily = PlusJakartaSans,
+                                            color = Color.White
+                                        )
+                                    }
+                                }
+                            }
+
+                            "complete" -> {
+                                // No button displayed for completed tasks
+                            }
+                        }
+
                     }
-                }
-                TaskState.COMPLETED -> {
-                    // No button displayed for completed tasks
                 }
             }
         }
     }
+
 }
