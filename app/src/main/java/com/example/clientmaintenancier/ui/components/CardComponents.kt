@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
@@ -124,10 +125,9 @@ fun InfoButton(deviceId: Int,onMoreInfoClick: (deviceId: Int) -> Unit, text :Str
 }
 
 @Composable
-fun HistoryButton(onHistoryClick: (deviceId: Int) -> Unit) {
-    // Bouton "History"
+fun HistoryButton(deviceId: Int,onHistoryClick: (deviceId: Int) -> Unit) {
     OutlinedButton(
-        onClick = {onHistoryClick},
+        onClick = { onHistoryClick(deviceId) },
         modifier = Modifier
             .fillMaxWidth()
             //.padding( vertical = 16.dp)
@@ -244,6 +244,13 @@ fun DeviceCard2(task: task, onCardClick: () -> Unit) {
         "En_maintenance" -> Color(0xFF2196F3) // Blue
         else -> Color.Gray
     }
+
+    val color2 = when (task.status) {
+        "en_panne" -> Color(0xFFF44336)
+        "complete" -> Color(0xFF4CAF50)
+        "en_progres" -> Color(0xFFFF9800)
+        else -> Color.Gray
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -295,11 +302,16 @@ fun DeviceCard2(task: task, onCardClick: () -> Unit) {
                         )
                     }
                     Text(
-                        text = task.type,
-                        fontSize = 12.sp,
+                        text = when (task.status) {
+                            "en_panne" -> "Not taken"
+                            "complete" -> "Completed"
+                            "en_progres" -> "In progress"
+                            else -> "Not available"
+                        },
                         fontFamily = PlusJakartaSans,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = textColor
+                        color = color2
                     )
                 }
 
@@ -345,7 +357,7 @@ fun DeviceSection(
                 onMoreInfoClick = onMoreInfoClick,
                 "More Info"
             )
-            HistoryButton(onHistoryClick)
+            HistoryButton(deviceId = device.id,onHistoryClick = onHistoryClick)
         }
 
         Spacer(modifier = Modifier.height(12.dp))

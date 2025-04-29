@@ -98,8 +98,8 @@ fun AnimatedBottomNavigationBar(navController: NavHostController) {
     val density = LocalDensity.current
     val cutoutRadius = 30.dp
     val cornerRadius = 0.dp
-    val barHeight = 65.dp
-    val totalHeight = 100.dp
+    val barHeight = 50.dp
+    val totalHeight = 60.dp
     val bottomPadding = 16.dp
     val targetOffset = remember(selectedItem, items.size) {
         derivedStateOf {

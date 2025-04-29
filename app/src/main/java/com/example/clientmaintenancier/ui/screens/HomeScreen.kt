@@ -35,27 +35,6 @@ import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 import com.example.clientmaintenancier.viewmodels.DeviceViewModel
 
-enum class DeviceStatus(val displayName: String) {
-    CONNECTED("Connected"),
-    DISCONNECTED("Disconnected"),
-    DOWN("Down")
-}
-data class DeviceInfo(
-    val id: Int,
-    val name: String,
-    val location: String,
-    val timestamp: String,
-    val status: DeviceStatus,
-    val imageUrl: String? = null
-)
-
-val primaryOrange = AppColors.primary
-val greenConnected = AppColors.green
-val redDown = AppColors.red
-val orangeDisconnected = AppColors.orange
-val lightBeige = Color(0xFFFFF0D9)
-val grayBackground = Color(0xFFF5F5F5)
-
 
 @Composable
 fun HeaderSection(
@@ -109,14 +88,28 @@ fun HomeScreen(
     onMoreInfoClick: (deviceId: Int) -> Unit = { deviceId ->
         navController.navigate("${Screen.DeviceDetails.route}/$deviceId")
         {
-            popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
-            }
+            // Ne pas réutiliser l'état précédent - forcer la création d'un nouveau composable
+            restoreState = false
+            // Éviter d'empiler les écrans multiples de détails
             launchSingleTop = true
-            restoreState = true
+            // Option pour nettoyer la pile de navigation
+            popUpTo(Screen.Home.route) {
+                saveState = false
+            }
         }
     },
-    onHistoryClick: (deviceId: Int) -> Unit,
+    onHistoryClick: (deviceId: Int) -> Unit = { deviceId ->
+        navController.navigate("${Screen.InterventionHistory.route}/$deviceId") {
+            // Ne pas réutiliser l'état précédent - forcer la création d'un nouveau composable
+            restoreState = false
+            // Éviter d'empiler les écrans multiples de détails
+            launchSingleTop = true
+            // Option pour nettoyer la pile de navigation
+            popUpTo(Screen.Home.route) {
+                saveState = false
+            }
+        }
+    },
     onNotificationClick: () -> Unit,
     onMenuClick: () -> Unit,
     notificationCount: Int

@@ -91,4 +91,7 @@ class DeviceViewModel(private val repository: DeviceRepository) : ViewModel() {
             }
         }
     }
+
+
+
 }

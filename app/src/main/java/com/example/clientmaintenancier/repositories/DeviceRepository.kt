@@ -3,6 +3,7 @@ package com.example.clientmaintenancier.repositories
 import com.example.clientmaintenancier.api.DeviceStatsResponse
 import com.example.clientmaintenancier.api.ApiService
 import com.example.clientmaintenancier.entities.device
+import com.example.clientmaintenancier.entities.realtask
 import com.example.clientmaintenancier.entities.task
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -25,6 +26,8 @@ class DeviceRepository(private val apiService: ApiService) {
             apiService.getDeviceById(deviceId)
         }
     }
+
+
 
 }
 

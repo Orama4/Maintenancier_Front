@@ -35,18 +35,7 @@ import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 import com.example.clientmaintenancier.viewmodels.TaskViewModel
 
-data class TaskInfo(
-    val id: Int,
-    val problem: String,
-    val deviceId : Int,
-    val deviceName: String,
-    val status: String,
-    val batteryLevel: Int,
-    val location: String,
-    val maintenanceTime: String
-)
 
-// Modified to use NavController and handle navigation
 @Composable
 fun TasksScreen(
     maintainerId: Int,
@@ -60,22 +49,27 @@ fun TasksScreen(
         // Navigate to DeviceDetails with deviceId
         navController.navigate("${Screen.DeviceDetails.route}/$deviceId")
         {
-            popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
-            }
+            // Ne pas réutiliser l'état précédent - forcer la création d'un nouveau composable
+            restoreState = false
+            // Éviter d'empiler les écrans multiples de détails
             launchSingleTop = true
-            restoreState = true
+            // Option pour nettoyer la pile de navigation
+            popUpTo(Screen.Tasks.route) {
+                saveState = false
+            }
         }
     },
     onTaskDetailsClick: (taskId: Int) -> Unit = { taskId ->
         // Navigate to TaskDetails with taskId
-        navController.navigate("${Screen.TaskDetails.route}/$taskId")
-        {
-            popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
-            }
+        navController.navigate("${Screen.TaskDetails.route}/$taskId") {
+            // Ne pas réutiliser l'état précédent - forcer la création d'un nouveau composable
+            restoreState = false
+            // Éviter d'empiler les écrans multiples de détails
             launchSingleTop = true
-            restoreState = true
+            // Option pour nettoyer la pile de navigation
+            popUpTo(Screen.Tasks.route) {
+                saveState = false
+            }
         }
     }
 ) {
@@ -94,6 +88,7 @@ fun TasksScreen(
     val error by viewModel.error1.collectAsState()
 
     LaunchedEffect(Unit) {
+        viewModel.clearInterventionsData2()
         viewModel.fetchInterventionsByMaintainer(maintainerId)
     }
 

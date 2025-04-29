@@ -1,5 +1,6 @@
 package com.example.clientmaintenancier.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -28,11 +30,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.clientmaintenancier.R
 import com.example.clientmaintenancier.navigation.Screen
+import com.example.clientmaintenancier.ui.components.markAsCompleted
 import com.example.clientmaintenancier.ui.components.takeTask
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 import com.example.clientmaintenancier.viewmodels.TaskViewModel
-
 
 
 @Composable
@@ -46,23 +48,40 @@ fun TaskDetailsScreen(
     val error by viewModel.error2.collectAsState()
 
     LaunchedEffect(taskId) {
+        viewModel.clearInterventionsData3()
         viewModel.fetchInterventionById(taskId)
     }
 
 
     val scrollState = rememberScrollState()
     var showDetailsDialog by remember { mutableStateOf(false) }
+    var showCompletedDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
 
     // TaskDetailsDialog component
     takeTask(
         isVisible = showDetailsDialog,
         onDismiss = { showDetailsDialog = false },
-        onConfirm = { date, location ->
-            // Here you would handle the task details submission
-            // For example, update the task status to IN_PROGRESS
-            // and navigate back or show a confirmation
+        onConfirm = { date ->
+            viewModel.updateTask(
+                interventionId = taskId, planDate = date, deviceId = task!!.deviceId)
             showDetailsDialog = false
-            // You could navigate back or to another screen
+            Toast.makeText(context, "Task started successfully", Toast.LENGTH_SHORT).show()
+            navController.navigate(Screen.Tasks.route) {
+                popUpTo(Screen.Tasks.route) { inclusive = true }
+            }
+        }
+    )
+
+    markAsCompleted(
+        isVisible = showCompletedDialog,
+        onDismiss = { showCompletedDialog = false },
+        onConfirm = { description ->
+            viewModel.markInterventionAsCompleted(interventionId = taskId, deviceId = task!!.deviceId,description = description)
+            showCompletedDialog = false
+            Toast.makeText(context, "Task marked as completed successfully", Toast.LENGTH_SHORT).show()
+            //You could navigate back or to another screen
             navController.navigate(Screen.Tasks.route) {
                 popUpTo(Screen.Tasks.route) { inclusive = true }
             }
@@ -107,12 +126,10 @@ fun TaskDetailsScreen(
                             ) {
                             Image(
                                 painter = painterResource(id = R.drawable.ic_back),
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp).clickable {
-                                    navController.navigate(Screen.Tasks.route) {
-                                        popUpTo(Screen.Tasks.route) { inclusive = false }
-                                    }
-                                }
+                                contentDescription = "Back",
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clickable { navController.navigateUp() }
                             )
 
                             Text(
@@ -356,7 +373,7 @@ fun TaskDetailsScreen(
                                     modifier = Modifier.padding(bottom = 30.dp)
                                 ) {
                                     OutlinedButton(
-                                        onClick = { /* Action du bouton ici */ },
+                                        onClick = { showCompletedDialog = true},
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = ButtonDefaults.outlinedButtonColors(
                                             contentColor = AppColors.green

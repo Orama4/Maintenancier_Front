@@ -9,30 +9,27 @@ import ProfileInfoScreen
 import PushNotificationsScreen
 import ReportBugScreen
 import UserProfile
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.clientmaintenancier.repositories.DeviceRepository
 import com.example.clientmaintenancier.repositories.TaskRepository
 import com.example.clientmaintenancier.ui.screens.DeviceDetailsScreen
 import com.example.clientmaintenancier.ui.screens.ForgetPasswordScreen
 import com.example.clientmaintenancier.ui.screens.HomeScreen
+import com.example.clientmaintenancier.ui.screens.InterventionHistoryScreen
 import com.example.clientmaintenancier.ui.screens.LoginScreen
 import com.example.clientmaintenancier.ui.screens.OnboardingScreen
 import com.example.clientmaintenancier.ui.screens.RegistrationScreen
 import com.example.clientmaintenancier.ui.screens.TaskDetailsScreen
-import com.example.clientmaintenancier.ui.screens.TaskInfo
 import com.example.clientmaintenancier.ui.screens.TasksScreen
 import com.example.clientmaintenancier.ui.screens.VerificationScreen
 import com.example.clientmaintenancier.viewmodels.DeviceViewModel
@@ -52,6 +49,7 @@ sealed class Screen(val route: String) {
     object Tasks : Screen("tasks")
     object TaskDetails : Screen("TaskDetails")
     object DeviceDetails : Screen("DeviceDetails")
+    object InterventionHistory : Screen("InterventionHistory")
 
     object Main_account : Screen("main_account")
     object Profile_info : Screen("profile_info")
@@ -74,6 +72,7 @@ sealed class Screen(val route: String) {
 
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavigationScreen(
     navController: NavHostController,
@@ -81,6 +80,13 @@ fun NavigationScreen(
     taskRepository: TaskRepository,
 
 ) {
+    val taskViewModel: TaskViewModel = viewModel(
+        factory = TaskViewModelFactory(taskRepository)
+    )
+
+    val deviceViewModel: DeviceViewModel = viewModel(
+        factory = DeviceViewModelFactory(deviceRepository)
+    )
     NavHost(navController, startDestination = Screen.Home.route) {
         composable(Screen.Home.route) {
             val viewModel: DeviceViewModel = viewModel(
@@ -90,23 +96,18 @@ fun NavigationScreen(
                 maintainerId = 15,
                 viewModel = viewModel,
                 onUserSearch = {},
-                onHistoryClick = { _ -> },
                 onNotificationClick = {},
                 onMenuClick = {},
                 notificationCount = 2,
                 username = "Abla",
                 navController = navController
-
             )
         }
 
         composable(Screen.Tasks.route) {
-            val viewModel: TaskViewModel = viewModel(
-                factory = TaskViewModelFactory(taskRepository)
-            )
             TasksScreen(
                 maintainerId = 15,
-                viewModel = viewModel,
+                viewModel = taskViewModel,
                 notificationCount = 3,
                 onMenuClick = { },
                 onNotificationClick = { },
@@ -120,10 +121,7 @@ fun NavigationScreen(
             arguments = listOf(navArgument("taskId") { type = NavType.IntType })
         ) { backStackEntry ->
             val taskId = backStackEntry.arguments?.getInt("taskId") ?: 0
-            val viewModel: TaskViewModel = viewModel(
-                factory = TaskViewModelFactory(taskRepository)
-            )
-            TaskDetailsScreen(taskId = taskId,navController = navController,viewModel = viewModel)
+            TaskDetailsScreen(taskId = taskId,navController = navController,viewModel = taskViewModel)
         }
 
         composable(
@@ -131,10 +129,15 @@ fun NavigationScreen(
             arguments = listOf(navArgument("deviceId") { type = NavType.IntType })
         ) { backStackEntry ->
             val deviceId = backStackEntry.arguments?.getInt("deviceId") ?: 0
-            val viewModel: DeviceViewModel = viewModel(
-                factory = DeviceViewModelFactory(deviceRepository)
-            )
-            DeviceDetailsScreen(deviceId = deviceId,navController = navController,viewModel)
+            DeviceDetailsScreen(deviceId = deviceId,navController = navController,viewModel=deviceViewModel)
+        }
+
+        composable(
+            route = "${Screen.InterventionHistory.route}/{deviceId}",
+            arguments = listOf(navArgument("deviceId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val deviceId = backStackEntry.arguments?.getInt("deviceId") ?: 0
+            InterventionHistoryScreen(deviceId = deviceId,viewModel=taskViewModel,navController,onMenuClick = { })
         }
     }
 }
