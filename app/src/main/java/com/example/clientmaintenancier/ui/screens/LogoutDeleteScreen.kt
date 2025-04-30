@@ -1,6 +1,8 @@
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -39,10 +41,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.clientmaintenancier.R
+import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
+import com.example.clientmaintenancier.viewmodels.AuthViewModel
 
 
 // --- Logout / Delete Account Screen (Revamped UI) ---
@@ -50,8 +56,7 @@ import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 @Composable
 fun LogoutDeleteScreen(
     navController: NavController,
-    onLogout: () -> Unit,
-    onDeleteAccount: () -> Unit
+    authViewModel: AuthViewModel = viewModel()
 ) {
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
 
@@ -66,15 +71,28 @@ fun LogoutDeleteScreen(
                 .padding(horizontal = 16.dp, vertical = 10.dp) // More vertical padding
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp,) .background(Color.White) ,
+                modifier = Modifier.fillMaxWidth().padding(16.dp).background(Color.White),
                 horizontalArrangement = Arrangement.Start // Align to the left
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.d_back),
-                    contentDescription = null,
-                )
+                Box(
+                    modifier = Modifier
+                        .clickable {
+                            navController.navigate(Screen.Main_account.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.d_back),
+                        contentDescription = null,
+                    )
+                }
                 Text(
-                    text = "Report a bug",
+                    text = "Logout / Delete Account",
                     modifier = Modifier.padding(8.dp),
                     color = AppColors.darkBlue,
                     fontSize = 20.sp,
@@ -86,7 +104,12 @@ fun LogoutDeleteScreen(
             Spacer(modifier = Modifier.height(20.dp))
             ModernButton(
                 text = "Logout",
-                onClick = onLogout,
+                onClick = {
+                    authViewModel.logout()
+                    if (authViewModel.error.value == null) {
+                        navController.navigate(Screen.Login.route)
+                    }
+                },
                 icon = Icons.AutoMirrored.Filled.Logout
             )
 
@@ -140,7 +163,17 @@ fun LogoutDeleteScreen(
                 Button( // Destructive confirm button
                     onClick = {
                         showDeleteConfirmDialog = false
-                        onDeleteAccount()
+                        authViewModel.deleteAccount()
+                        if (authViewModel.error.value == null) {
+                            navController.navigate(Screen.Login.route)
+                            {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFFF3B30),

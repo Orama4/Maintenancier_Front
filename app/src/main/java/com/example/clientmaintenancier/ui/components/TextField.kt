@@ -29,6 +29,7 @@ fun ModernTextField(
     label: String,
     leadingIcon: ImageVector? = null, // Optional icon
     isError: Boolean = false
+
 ) {
     OutlinedTextField(
         value = value,
@@ -53,6 +54,7 @@ fun ModernTextField(
         ),
         singleLine = true,
         isError = isError
+
     )
 }
 

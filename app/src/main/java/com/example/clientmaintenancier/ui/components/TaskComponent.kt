@@ -25,10 +25,9 @@ import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 fun takeTask(
     isVisible: Boolean,
     onDismiss: () -> Unit,
-    onConfirm: (date: String, location: String) -> Unit
+    onConfirm: (date: String) -> Unit
 ) {
     var date by remember { mutableStateOf("") }
-    var location by remember { mutableStateOf("") }
 
     if (isVisible) {
         Dialog(
@@ -105,7 +104,7 @@ fun takeTask(
                         onValueChange = { date = it },
                         placeholder = {
                             Text(
-                                "e.g. 12/02/2025",
+                                "e.g. 2025-05-01",
                                 fontFamily = PlusJakartaSans,
                                 color = Color.Gray
                             )
@@ -122,8 +121,124 @@ fun takeTask(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Button(
+                        onClick = { onConfirm(date) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6F00)), // Orange color from image
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "Confirm",
+                            fontFamily = PlusJakartaSans,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = Color.White
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.fillMaxWidth(),
+                        border = BorderStroke(1.dp, Color.LightGray),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color.Black
+                        )
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            fontFamily = PlusJakartaSans,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun markAsCompleted(
+    isVisible: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: (description: String) -> Unit
+) {
+    var description by remember { mutableStateOf("") }
+
+
+    if (isVisible) {
+        Dialog(
+            onDismissRequest = onDismiss,
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false)) {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = 400.dp)
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color.White)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp)
+                ) {
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Task details",
+                                fontFamily = PlusJakartaSans,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 20.sp,
+                                color = Color.Black
+                            )
+
+                            Text(
+                                text = "✕",
+                                modifier = Modifier.clickable { onDismiss() },
+                                fontSize = 20.sp,
+                                color = Color.Gray
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "Enter the task details",
+                            fontFamily = PlusJakartaSans,
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
+
+                Divider(
+                    color = Color.LightGray.copy(alpha = 0.5f),
+                    thickness = 1.dp
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
                     Text(
-                        text = "Location*",
+                        text = "Task description*",
                         fontFamily = PlusJakartaSans,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Normal,
@@ -132,11 +247,11 @@ fun takeTask(
                     )
 
                     OutlinedTextField(
-                        value = location,
-                        onValueChange = { location = it },
+                        value = description,
+                        onValueChange = { description = it },
                         placeholder = {
                             Text(
-                                "eg. Alger,Oued smar",
+                                "enter description...",
                                 fontFamily = PlusJakartaSans,
                                 color = Color.Gray
                             )
@@ -151,10 +266,12 @@ fun takeTask(
                         singleLine = true
                     )
 
+
+
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Button(
-                        onClick = { onConfirm(date, location) },
+                        onClick = { onConfirm(description) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6F00)), // Orange color from image
                         shape = RoundedCornerShape(8.dp)

@@ -1,5 +1,6 @@
 package com.example.clientmaintenancier.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
@@ -16,9 +17,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,9 +38,11 @@ import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.ui.components.PageIndicator
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
+import com.example.clientmaintenancier.viewmodels.AuthViewModel
+import kotlinx.coroutines.delay
 
 @Composable
-fun OnboardingScreen(navController: NavHostController) {
+fun OnboardingScreen(navController: NavHostController,authViewModel: AuthViewModel) {
     val pages = listOf(
         "Welcome to IRCHAD maintenancier\n\nYour tool to support and assist visually impaired people indoors.",
         "Track movements in real time\n\nCommunicate with users and guide them through voice instructions and vibrations.",
@@ -49,7 +54,18 @@ fun OnboardingScreen(navController: NavHostController) {
     var pageIndex by remember { mutableStateOf(0) }
     var accumulatedDrag by remember { mutableStateOf(0f) }  // Stores total drag distance
     val dragThreshold = 200f  // Increase this to reduce sensitivity
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        delay(2500) // Show onboarding for 5 seconds
+        val user = authViewModel.getUserInfo()
+        Log.d("after getting  user", "after getting user: $user")
 
+        if (user != null) {
+            Log.d("redirecting to user profile ", "redirecting to user profile : $user")
+
+            navController.navigate(Screen.Home.route)
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -124,7 +140,7 @@ fun OnboardingScreen(navController: NavHostController) {
             Button(
                 onClick = {
                     if (pageIndex < pages.size - 1) pageIndex++
-                    else navController.navigate("registration")
+                    else navController.navigate("login")
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF8000)),
                 shape = RoundedCornerShape(12.dp),

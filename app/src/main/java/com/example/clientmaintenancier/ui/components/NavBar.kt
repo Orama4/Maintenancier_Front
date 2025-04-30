@@ -85,21 +85,28 @@ fun AnimatedBottomNavigationBar(navController: NavHostController) {
 
     val selectedItem by remember(currentRoute) {
         derivedStateOf {
-            when (currentRoute) {
-                Screen.Home.route -> 0
-                Screen.Tasks.route -> 1
-                Screen.Main_account.route -> 2
-                Screen.TaskDetails.route->1
-                else -> 2
-            }
+            currentRoute?.let { route ->
+                when {
+                    route == Screen.Home.route || route.startsWith(Screen.Home.route) -> 0
+                    route == Screen.OnBoarding.route || route.startsWith(Screen.OnBoarding.route) -> 0
+                    route == Screen.Tasks.route || route.startsWith(Screen.Tasks.route) -> 1
+                    route == Screen.DeviceDetails.route || route.startsWith(Screen.DeviceDetails.route) -> 0
+                    route == Screen.Main_account.route || route.startsWith(Screen.Main_account.route) -> 2
+                    route == Screen.TaskDetails.route || route.startsWith(Screen.TaskDetails.route) -> 1
+                    route == Screen.Login.route || route.startsWith(Screen.Login.route) -> 0
+                    route == Screen.InterventionHistory.route || route.startsWith(Screen.InterventionHistory.route) -> 0
+                    else -> 2
+                }
+            } ?: 2 // Default to 2 if currentRoute is null
         }
     }
+
 
     val density = LocalDensity.current
     val cutoutRadius = 30.dp
     val cornerRadius = 0.dp
-    val barHeight = 65.dp
-    val totalHeight = 100.dp
+    val barHeight = 50.dp
+    val totalHeight = 60.dp
     val bottomPadding = 16.dp
     val targetOffset = remember(selectedItem, items.size) {
         derivedStateOf {
@@ -175,12 +182,23 @@ fun AnimatedBottomNavigationBar(navController: NavHostController) {
                         isSelected = selectedItem == index,
                         cutoutRadius = cutoutRadius,
                         onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = true
-                                }
+                            navController.navigate(screen.route)
+//                            {
+//                                popUpTo(navController.graph.startDestinationId) {
+//                                    saveState = true
+//                                }
+//                                launchSingleTop = true
+//                                restoreState = true
+//                            }
+                            {
+                                // Ne pas réutiliser l'état précédent - forcer la création d'un nouveau composable
+                                restoreState = false
+                                // Éviter d'empiler les écrans multiples de détails
                                 launchSingleTop = true
-                                restoreState = true
+                                // Option pour nettoyer la pile de navigation
+                                popUpTo(Screen.Tasks.route) {
+                                    saveState = false
+                                }
                             }
                         }
                     )

@@ -1,8 +1,5 @@
 package com.example.clientmaintenancier.ui.screens
-import android.icu.text.StringSearch
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,6 +12,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,47 +33,43 @@ import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.ui.components.*
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
+import com.example.clientmaintenancier.viewmodels.TaskViewModel
 
-data class TaskInfo(
-    val id: Int,
-    val problem: String,
-    val deviceId : Int,
-    val deviceName: String,
-    val status: String,
-    val batteryLevel: Int,
-    val location: String,
-    val maintenanceTime: String
-)
 
-// Modified to use NavController and handle navigation
 @Composable
 fun TasksScreen(
+    maintainerId: Int,
+    viewModel: TaskViewModel,
     notificationCount: Int,
     onMenuClick: () -> Unit,
     onNotificationClick: () -> Unit,
     onTaskSearch: (String) -> Unit,
-    tasks: List<TaskInfo>,
     navController: NavController, // Added navigation controller parameter
     onDeviceDetailsClick: (deviceId: Int) -> Unit = { deviceId ->
         // Navigate to DeviceDetails with deviceId
         navController.navigate("${Screen.DeviceDetails.route}/$deviceId")
         {
-            popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
-            }
+            // Ne pas réutiliser l'état précédent - forcer la création d'un nouveau composable
+            restoreState = false
+            // Éviter d'empiler les écrans multiples de détails
             launchSingleTop = true
-            restoreState = true
+            // Option pour nettoyer la pile de navigation
+            popUpTo(Screen.Tasks.route) {
+                saveState = false
+            }
         }
     },
     onTaskDetailsClick: (taskId: Int) -> Unit = { taskId ->
         // Navigate to TaskDetails with taskId
-        navController.navigate("${Screen.TaskDetails.route}/$taskId")
-        {
-            popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
-            }
+        navController.navigate("${Screen.TaskDetails.route}/$taskId") {
+            // Ne pas réutiliser l'état précédent - forcer la création d'un nouveau composable
+            restoreState = false
+            // Éviter d'empiler les écrans multiples de détails
             launchSingleTop = true
-            restoreState = true
+            // Option pour nettoyer la pile de navigation
+            popUpTo(Screen.Tasks.route) {
+                saveState = false
+            }
         }
     }
 ) {
@@ -87,188 +82,219 @@ fun TasksScreen(
     val grayBackground = Color(0xFFF5F5F5)
     val scrollState = rememberScrollState()
 
+
+    val tasks by viewModel.interventions.collectAsState()
+    val isLoading by viewModel.loading1.collectAsState()
+    val error by viewModel.error1.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.clearInterventionsData2()
+        viewModel.fetchInterventionsByMaintainer(maintainerId)
+    }
+
     Box(modifier = Modifier.fillMaxSize().background(Color.White).padding(16.dp) ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            // Top Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Menu Button
-                Box(
-                    modifier = Modifier
-                        .size(45.dp)
-                        .clip(CircleShape)
-                        .background(grayBackground)
-                        .clickable(onClick = onMenuClick),
-                    contentAlignment = Alignment.Center,
-
-                    ) {
-
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_menu),
-                        contentDescription = "Menu",
-                        modifier = Modifier.size(20.dp),
-                    )
-
-                }
-
-                // Notification Icon with Badge
-                Box {
-                    Box(
-                        modifier = Modifier
-                            .size(45.dp)
-                            .clip(CircleShape)
-                            .background(Color.Black)
-                            .clickable(onClick = onNotificationClick),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Outlined.Notifications,
-                            contentDescription = "Notifications",
-                            tint = Color.White
-                        )
-                    }
-
-                    // Badge
-                    Box(
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clip(CircleShape)
-                            .background(primaryOrange)
-                            .align(Alignment.TopEnd),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = notificationCount.toString(),
-                            color = Color.White,
-                            fontSize = 12.sp,
-                            fontFamily = PlusJakartaSans,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
+        when {
+            isLoading -> {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
 
-            // Scrollable Content
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .verticalScroll(scrollState)
-            ) {
-                // Greeting
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                ) {
-
-                    Text(
-                        text = "List of tasks",
-                        fontFamily = PlusJakartaSans,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                // Search Bar
-                TextField(
-                    value = searchText,
-                    onValueChange = {
-                        searchText = it
-                        onTaskSearch(it)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(grayBackground),
-                    placeholder = { Text("Search task", fontFamily = PlusJakartaSans) },
-                    leadingIcon = {
-                        Icon(
-                            Icons.Default.Search,
-                            contentDescription = "Search",
-                            tint = Color.Gray.copy(0.6f)
-                        )
-                    },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = grayBackground,
-                        unfocusedContainerColor = grayBackground,
-                        disabledContainerColor = grayBackground,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                    singleLine = true
+            error != null -> {
+                Text(
+                    text = error ?: "",
+                    color = Color.Red,
+                    modifier = Modifier.align(Alignment.Center)
                 )
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentPadding = PaddingValues(vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    item{
-                        // Status Cards Grid
+            }
+
+            tasks != null -> {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // Top Bar
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Menu Button
+                        Box(
+                            modifier = Modifier
+                                .size(45.dp)
+                                .clip(CircleShape)
+                                .background(grayBackground)
+                                .clickable(onClick = onMenuClick),
+                            contentAlignment = Alignment.Center,
+
+                            ) {
+
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_menu),
+                                contentDescription = "Menu",
+                                modifier = Modifier.size(20.dp),
+                            )
+
+                        }
+
+                        // Notification Icon with Badge
+                        Box {
+                            Box(
+                                modifier = Modifier
+                                    .size(45.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Black)
+                                    .clickable(onClick = onNotificationClick),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Outlined.Notifications,
+                                    contentDescription = "Notifications",
+                                    tint = Color.White
+                                )
+                            }
+
+                            // Badge
+                            Box(
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .clip(CircleShape)
+                                    .background(primaryOrange)
+                                    .align(Alignment.TopEnd),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = notificationCount.toString(),
+                                    color = Color.White,
+                                    fontSize = 12.sp,
+                                    fontFamily = PlusJakartaSans,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+
+                    // Scrollable Content
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .verticalScroll(scrollState)
+                    ) {
+                        // Greeting
                         Row(
                             modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp)
                         ) {
-                            // Total Card
-                            StatusCard(
-                                modifier = Modifier.weight(1f),
-                                title = "Total tasks",
-                                count = "${tasks.size} tasks",
-                                iconContent = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_grid),
-                                        contentDescription = "Total",
-                                        tint = Color.Black
+
+                            Text(
+                                text = "List of tasks",
+                                fontFamily = PlusJakartaSans,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        // Search Bar
+                        TextField(
+                            value = searchText,
+                            onValueChange = {
+                                searchText = it
+                                onTaskSearch(it)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(grayBackground),
+                            placeholder = { Text("Search task", fontFamily = PlusJakartaSans) },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Default.Search,
+                                    contentDescription = "Search",
+                                    tint = Color.Gray.copy(0.6f)
+                                )
+                            },
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = grayBackground,
+                                unfocusedContainerColor = grayBackground,
+                                disabledContainerColor = grayBackground,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            ),
+                            singleLine = true
+                        )
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            contentPadding = PaddingValues(vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            item {
+                                // Status Cards Grid
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                ) {
+                                    // Total Card
+                                    StatusCard(
+                                        modifier = Modifier.weight(1f),
+                                        title = "Total tasks",
+                                        count = "${tasks.size} tasks",
+                                        iconContent = {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_grid),
+                                                contentDescription = "Total",
+                                                tint = Color.Black
+                                            )
+                                        }
+                                    )
+
+                                    // Down Card
+                                    val alertCount = tasks.count {
+                                        it.device.status in listOf("Banne", "Hors_service", "Defectueux")
+                                    }
+
+                                    StatusCard(
+                                        modifier = Modifier.weight(1f),
+                                        title = "Active alers",
+                                        count = "${alertCount} alerts",
+                                        iconContent = {
+                                            Icon(
+                                                imageVector = Icons.Default.TrendingDown,
+                                                contentDescription = "Down",
+                                                tint = redDown
+                                            )
+                                        },
+                                        titleColor = redDown
                                     )
                                 }
-                            )
 
-                            // Down Card
-                            StatusCard(
-                                modifier = Modifier.weight(1f),
-                                title = "Active alers",
-                                count = "1 alert",
-                                iconContent = {
-                                    Icon(
-                                        imageVector = Icons.Default.TrendingDown,
-                                        contentDescription = "Down",
-                                        tint = redDown
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+
+                            tasks.forEach {
+                                println("Task id = ${it.id}")
+                            }
+
+
+                            // tasks List
+                            if (tasks.isNotEmpty()) {
+                                item {
+                                    DeviceSection2(
+                                        tasks = tasks,
+                                        onTaskDetailsClick = onTaskDetailsClick,
+                                        onDeviceDetailsClick = onDeviceDetailsClick,
+                                        onStartMaintenanceClick = onDeviceDetailsClick,
+                                        onMoreInfoClick = onDeviceDetailsClick
                                     )
-                                },
-                                titleColor = redDown
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-
-
-                    // Device List
-                    if (tasks.isNotEmpty()) {
-                        item {
-                            DeviceSection2(
-                                sectionTitle = "Down",
-                                titleColor = redDown,
-                                batteryLevel = 50,
-                                tasks = tasks,
-                                onTaskDetailsClick = onTaskDetailsClick,
-                                onDeviceDetailsClick = onDeviceDetailsClick,
-                                onStartMaintenanceClick = onDeviceDetailsClick,
-                                onMoreInfoClick = onDeviceDetailsClick
-                            )
+                                }
+                            }
+                            // Add extra padding at the bottom to ensure content isn't hidden behind bottom nav
+                            item { Spacer(Modifier.height(16.dp)) }
                         }
                     }
-                    // Add extra padding at the bottom to ensure content isn't hidden behind bottom nav
-                    item { Spacer(Modifier.height(16.dp)) }
                 }
             }
         }

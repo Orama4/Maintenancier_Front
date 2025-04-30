@@ -1,4 +1,7 @@
 package com.example.clientmaintenancier.ui.screens
+import ModernButton
+import ModernTextField
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,8 +17,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
@@ -29,6 +34,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -37,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,117 +53,88 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.clientmaintenancier.R
+import com.example.clientmaintenancier.api.SendOTPRequest
 import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
+import com.example.clientmaintenancier.viewmodels.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForgetPasswordScreen(navController: NavController) {
-    var checkState by remember { mutableStateOf(false) }
-    val textStates = remember { mutableStateListOf("", "") }
-    var passwordVisible by remember { mutableStateOf(false) }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppColors.darkBlue), // Dark background
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
+fun ForgetPasswordScreen(navController: NavController, authViewModel: AuthViewModel = viewModel()) {
+    var email by rememberSaveable { mutableStateOf("") }
+    var showError by rememberSaveable { mutableStateOf<String?>(null) }
+
+    Scaffold(
+        containerColor = Color.White
+    ) { paddingValues ->
         Column(
-            modifier = Modifier.padding(top = 140.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = "Forgot Password",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                fontFamily = PlusJakartaSans,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Please sign in to your existing account",
-                fontFamily = PlusJakartaSans,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Normal,
-                color = Color.White
-            )
-        }
-
-
-        Card(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 40.dp)
-                .fillMaxHeight(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                .padding(paddingValues)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp).background(Color.White),
+                horizontalArrangement = Arrangement.Start // Align to the left
             ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    // Email Field
-                    Text(
-                        "EMAIL",
-                        fontSize = 12.sp,
-                        color = Color.Gray,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    OutlinedTextField(
-                        value = textStates[0],
-                        onValueChange = { textStates[0] = it },
-                        placeholder = { Text("example@gmail.com", color = Color.Gray) },
-                        modifier = Modifier.fillMaxWidth().height(64.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            unfocusedBorderColor = Color.White,
-                            focusedBorderColor = Color.White,
-                            containerColor = AppColors.lightBlue
-                        )
-                    )
-
-
-
-                    Spacer(modifier = Modifier.height(26.dp))
-
-                    // Login Button
-                    Button(
-                        onClick = {navController.navigate(Screen.Verification.route)
-                                  },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF8000)),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            "SEND CODE",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            fontFamily = PlusJakartaSans
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(26.dp))
-
-
-                }
+                Image(
+                    painter = painterResource(id = R.drawable.d_back),
+                    contentDescription = null,
+                )
+                Text(
+                    text = "Forgot Password",
+                    modifier = Modifier.padding(8.dp),
+                    color = AppColors.darkBlue,
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.Start,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = PlusJakartaSans,
+                )
             }
+            Spacer(modifier = Modifier.height(20.dp))
+
+            ModernTextField(
+                value = email,
+                onValueChange = { email = it; showError = null },
+                label = "Email Address"
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            AnimatedVisibility(visible = showError != null) {
+                Text(
+                    text = showError ?: "",
+                    color = Color(0xFFFF3B30),
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(top = 8.dp, start = 4.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+            ModernButton(
+                text = "Send OTP",
+                onClick = {
+                    if (email.isEmpty()) {
+                        showError = "Email is required."
+                    } else {
+                        authViewModel.sendForgotPasswordOTP(SendOTPRequest(email = email))
+                        if (authViewModel.error.value == null) {
+                            navController.navigate(Screen.VerificationOtp.createRoute(email))
+
+                        } else {
+                            showError = authViewModel.error.value
+                        }
+                    }
+                },
+                enabled = email.isNotEmpty()
+            )
         }
     }
 }

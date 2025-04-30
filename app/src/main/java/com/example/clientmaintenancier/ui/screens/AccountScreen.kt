@@ -25,11 +25,7 @@ import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 
 
-data class UserProfile(
-    val name: String,
-    val email: String,
-    val phone: String
-)
+
 
 data class FaqItem(
     val id: String,

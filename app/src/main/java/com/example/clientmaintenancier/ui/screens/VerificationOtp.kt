@@ -66,15 +66,15 @@ import com.example.clientmaintenancier.viewmodels.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VerificationScreen(navController: NavController, viewModel: AuthViewModel, email: String) {
+fun VerificationOtp(navController: NavController, viewModel: AuthViewModel, email: String) {
     val otpValues = remember { mutableStateListOf("", "", "", "", "", "") }
     val loading by viewModel.loading.collectAsState()
     val error by viewModel.error.collectAsState()
     val otpVerified by viewModel.otpVerified.collectAsState()
-    val registerSuccess by viewModel.registerSuccess.collectAsState()
+
     LaunchedEffect(otpVerified) {
         if (otpVerified) {
-            navController.navigate(Screen.Login.route)
+            navController.navigate(Screen.ResetPassword.createRoute(email))
         }
     }
 
@@ -194,8 +194,7 @@ fun VerificationScreen(navController: NavController, viewModel: AuthViewModel, e
                     Button(
                         onClick = {
                             val otp = otpValues.joinToString("")
-                            Log.d("otp code is ","otp:$otp")
-                            viewModel.verifyOTP(VerifyOTPRequest(email = email, otp = otp))
+                            viewModel.verifyForgotPasswordOTP(VerifyOTPRequest(email = email, otp = otp))
                         },
                         modifier = Modifier
                             .fillMaxWidth()

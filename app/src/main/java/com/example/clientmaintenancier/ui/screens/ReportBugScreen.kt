@@ -1,7 +1,9 @@
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,7 +33,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.clientmaintenancier.R
+import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
 
@@ -60,10 +64,23 @@ fun ReportBugScreen(
                 modifier = Modifier.fillMaxWidth().padding(16.dp,) .background(Color.White) ,
                 horizontalArrangement = Arrangement.Start // Align to the left
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.d_back),
-                    contentDescription = null,
-                )
+                Box(
+                    modifier = Modifier
+                        .clickable {
+                            navController.navigate(Screen.Main_account.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.d_back),
+                        contentDescription = null,
+                    )
+                }
                 Text(
                     text = "Report a bug",
                     modifier = Modifier.padding(8.dp),
