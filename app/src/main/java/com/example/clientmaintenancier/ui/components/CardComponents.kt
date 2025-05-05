@@ -153,11 +153,12 @@ fun HistoryButton(deviceId: Int,onHistoryClick: (deviceId: Int) -> Unit) {
 @Composable
 fun DeviceCard(device: device) {
     val color = when (device.status) {
-        "Actif" -> Color(0xFF4CAF50)        // Green
-        "Banne" -> Color(0xFFFF9800)         // Orange
-        "Hors_service" -> Color.Red
-        "Defectueux" -> Color(0xFFF44336)    // Darker Red
-        "En_maintenance" -> Color(0xFF2196F3) // Blue
+        "connected" -> Color(0xFF4CAF50)        // Green
+        "disconnected" -> Color(0xFFFF9800)         // Orange
+        "out_of_service" -> Color.Red
+        "defective" -> Color(0xFFF44336)    // Darker Red
+        "broken_down" -> Color(0xFFF44336)    // Darker Red
+        "under_maintenance" -> Color(0xFF2196F3) // Blue
         else -> Color.Gray
     }
     Card(
@@ -237,11 +238,12 @@ fun DeviceCard2(task: task, onCardClick: () -> Unit) {
     }
 
     val color = when (task.device.status) {
-        "Actif" -> Color(0xFF4CAF50)        // Green
-        "Banne" -> Color(0xFFFF9800)         // Orange
-        "Hors_service" -> Color.Red
-        "Defectueux" -> Color(0xFFF44336)    // Darker Red
-        "En_maintenance" -> Color(0xFF2196F3) // Blue
+        "connected" -> Color(0xFF4CAF50)        // Green
+        "disconnected" -> Color(0xFFFF9800)         // Orange
+        "out_of_service" -> Color.Red
+        "defective" -> Color(0xFFF44336)    // Darker Red
+        "broken_down" -> Color(0xFFF44336)    // Darker Red
+        "under_maintenance" -> Color(0xFF2196F3) // Blue
         else -> Color.Gray
     }
 

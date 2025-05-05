@@ -123,22 +123,24 @@ fun DeviceDetailsScreen(
 
                             Text(
                                 text = when (device?.status) {
-                                    "Actif" -> "Actif"
-                                    "Banne" -> "Banné"
-                                    "Hors_service" -> "Hors service"
-                                    "Defectueux" -> "Defectueux"
-                                    "En_maintenance" -> "En maintenance"
+                                    "connected" -> "connected"
+                                    "disconnected" -> "disconnected"
+                                    "out_of_service" -> "out of service"
+                                    "defective" -> "defective"
+                                    "broken_down" -> "broken down"
+                                    "under_maintenance" -> "under maintenance"
                                     else -> "Not available"
                                 },
                                 fontFamily = PlusJakartaSans,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = when (device!!.status) {
-                                    "Actif" -> AppColors.green
-                                    "Banne" -> AppColors.primary
-                                    "Hors_service" -> AppColors.red
-                                    "Defectueux" -> AppColors.red
-                                    "En_maintenance" -> Color(0xFF2196F3)
+                                    "connected" -> AppColors.green
+                                    "defective" -> AppColors.primary
+                                    "disconnected" -> AppColors.red
+                                    "out_of_service" -> AppColors.red
+                                    "broken_down" -> AppColors.red
+                                    "under_maintenance" -> Color(0xFF2196F3)
                                     else -> AppColors.grey
                                 }
                             )
@@ -221,7 +223,7 @@ fun DeviceDetailsScreen(
                                 color = AppColors.darkBlue
                             )
 
-                            Spacer(modifier = Modifier.height(30.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                             Text(
                                 text = "RAM usage:",
                                 fontFamily = PlusJakartaSans,
@@ -232,6 +234,57 @@ fun DeviceDetailsScreen(
 
                             Text(
                                 text = device?.ramUsage.toString(),
+                                fontFamily = PlusJakartaSans,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = AppColors.darkBlue
+                            )
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Text(
+                                text = "Device type:",
+                                fontFamily = PlusJakartaSans,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AppColors.darkBlue
+                            )
+                            Text(
+                                text = device!!.type,
+                                fontFamily = PlusJakartaSans,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = AppColors.darkBlue
+                            )
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Text(
+                                text = "Device Price:",
+                                fontFamily = PlusJakartaSans,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AppColors.darkBlue
+                            )
+                            Text(
+                                text = device?.price.toString(),
+                                fontFamily = PlusJakartaSans,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = AppColors.darkBlue
+                            )
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Text(
+                                text = "Device manufacturing cost:",
+                                fontFamily = PlusJakartaSans,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AppColors.darkBlue
+                            )
+                            Text(
+                                text = device?.manufacturingCost.toString(),
                                 fontFamily = PlusJakartaSans,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Normal,
