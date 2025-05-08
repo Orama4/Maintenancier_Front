@@ -58,18 +58,6 @@ fun HeaderSection(
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onNotificationClick) {
-                BadgedBox(
-                    badge = {
-                        if (notificationCount > 0) {
-                            Badge { Text(text = notificationCount.toString()) }
-                        }
-                    }
-                ) {
-                    Icon(Icons.Default.Notifications, contentDescription = "Notifications")
-                }
-            }
-
             IconButton(onClick = onMenuClick) {
                 Icon(Icons.Default.Menu, contentDescription = "Menu")
             }
@@ -181,41 +169,6 @@ fun HomeScreen(
                             )
 
                         }
-
-                        // Notification Icon with Badge
-                        Box {
-                            Box(
-                                modifier = Modifier
-                                    .size(45.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.Black).clickable(onClick = onNotificationClick),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    Icons.Outlined.Notifications,
-                                    contentDescription = "Notifications",
-                                    tint = Color.White
-                                )
-                            }
-
-                            // Badge
-                            Box(
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .clip(CircleShape)
-                                    .background(primaryOrange)
-                                    .align(Alignment.TopEnd),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = notificationCount.toString(),
-                                    color = Color.White,
-                                    fontSize = 12.sp,
-                                    fontFamily = PlusJakartaSans,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
                     }
 
                     // Scrollable Content
@@ -245,28 +198,28 @@ fun HomeScreen(
                         }
 
                         // Search Bar
-                        TextField(
-                            value = searchText,
-                            onValueChange = {
-                                searchText = it
-                                onUserSearch(it)
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 16.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(grayBackground),
-                            placeholder = { Text("Search users", fontFamily = PlusJakartaSans) },
-                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.Gray.copy(0.6f)) },
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = grayBackground,
-                                unfocusedContainerColor = grayBackground,
-                                disabledContainerColor = grayBackground,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
-                            ),
-                            singleLine = true
-                        )
+//                        TextField(
+//                            value = searchText,
+//                            onValueChange = {
+//                                searchText = it
+//                                onUserSearch(it)
+//                            },
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .padding(vertical = 16.dp)
+//                                .clip(RoundedCornerShape(8.dp))
+//                                .background(grayBackground),
+//                            placeholder = { Text("Search users", fontFamily = PlusJakartaSans) },
+//                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.Gray.copy(0.6f)) },
+//                            colors = TextFieldDefaults.colors(
+//                                focusedContainerColor = grayBackground,
+//                                unfocusedContainerColor = grayBackground,
+//                                disabledContainerColor = grayBackground,
+//                                focusedIndicatorColor = Color.Transparent,
+//                                unfocusedIndicatorColor = Color.Transparent
+//                            ),
+//                            singleLine = true
+//                        )
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()

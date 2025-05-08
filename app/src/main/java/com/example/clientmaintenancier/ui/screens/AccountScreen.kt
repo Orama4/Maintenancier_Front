@@ -93,18 +93,6 @@ fun AccountMainScreen(navController: NavController) {
                     }}
                 )
                 SettingsDivider()
-                SettingsItem(
-                    icon = Icons.Filled.NotificationsNone, // Changed Icon
-                    title = "Push Notifications",
-                    onClick = { navController.navigate(Screen.Push_notifications.route)
-                    {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }}
-                )
             }
 
             Spacer(modifier = Modifier.height(15.dp))

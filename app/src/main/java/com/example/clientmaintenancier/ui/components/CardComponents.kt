@@ -139,7 +139,7 @@ fun HistoryButton(deviceId: Int,onHistoryClick: (deviceId: Int) -> Unit) {
         )
     ) {
         Text(
-            text = "History",
+            text = "History of interventions",
             fontSize = 16.sp,
             fontFamily = PlusJakartaSans,
             fontWeight = FontWeight.SemiBold,
