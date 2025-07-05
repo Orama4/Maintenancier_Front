@@ -1,5 +1,8 @@
 package com.example.clientmaintenancier.ui.screens
 
+import AmazingErrorPopup
+import ElegantCircularProgressIndicator
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,6 +39,8 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -50,18 +56,38 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.clientmaintenancier.R
-import com.example.clientmaintenancier.navigation.Destination
+import com.example.clientmaintenancier.api.LoginRequest
+import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
+import com.example.clientmaintenancier.viewmodels.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController,authViewModel: AuthViewModel = viewModel()) {
     var checkState by remember { mutableStateOf(false) }
     val textStates = remember { mutableStateListOf("", "") }
     var passwordVisible by remember { mutableStateOf(false) }
+    val loading by authViewModel.loading.collectAsState()
+    val error by authViewModel.error.collectAsState()
+    val loginSuccess by authViewModel.loginSuccess.collectAsState()
+
+    LaunchedEffect(loginSuccess) {
+        if (loginSuccess != null) {
+            navController.navigate(Screen.Home.route){
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+            Log.d("going to profile ","going to profile ")
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -174,14 +200,17 @@ fun LoginScreen(navController: NavController) {
                         )
                         Text("Remember me", color = Color.Gray.copy(0.6f), fontFamily = PlusJakartaSans)
                     }
-                    Text("Forgot Password", color = Color(0xFFFF8000), fontWeight = FontWeight.Bold, fontFamily = PlusJakartaSans,modifier = Modifier.clickable(onClick = { navController.navigate(Destination.ForgotPassword.route)}))
+                    Text("Forgot Password", color = Color(0xFFFF8000), fontWeight = FontWeight.Bold, fontFamily = PlusJakartaSans,modifier = Modifier.clickable(onClick = { navController.navigate(Screen.ForgotPassword.route)}))
                 }
 
                 Spacer(modifier = Modifier.height(26.dp))
 
                 // Login Button
                 Button(
-                    onClick = {navController.navigate(Destination.Home.route)},
+                    onClick = {
+                        Log.d("sending infos to login ", "sending infos to login: $textStates[0]")
+
+                        authViewModel.login(LoginRequest(textStates[0], textStates[1]))},
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(64.dp),
@@ -197,7 +226,7 @@ fun LoginScreen(navController: NavController) {
                 Row {
                     Text("Don't have an account?", color = Color.Gray, fontFamily = PlusJakartaSans)
                     Text(" SIGN UP", color = Color(0xFFFF8000), fontWeight = FontWeight.Bold, fontFamily = PlusJakartaSans, modifier = Modifier.clickable(onClick = { navController.navigate(
-                        Destination.Registration.route) }))
+                        Screen.Registration.route) }))
                 }
 
                 Spacer(modifier = Modifier.height(38.dp))
@@ -229,6 +258,13 @@ fun LoginScreen(navController: NavController) {
 
             }
         }
+    }
+    if (loading) {
+        ElegantCircularProgressIndicator()
+    }
+
+    error?.let {
+        AmazingErrorPopup(it)
     }
 }
 

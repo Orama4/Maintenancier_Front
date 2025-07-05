@@ -1,79 +1,65 @@
+
 package com.example.clientmaintenancier.ui.screens
-import androidx.compose.foundation.Image
+
+import AmazingErrorPopup
+import ElegantCircularProgressIndicator
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.Text
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.clientmaintenancier.R
-import com.example.clientmaintenancier.navigation.Destination
+import com.example.clientmaintenancier.api.RegisterRequest
+import com.example.clientmaintenancier.api.SendOTPRequest
+import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
+import com.example.clientmaintenancier.viewmodels.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegistrationScreen(navController: NavController) {
-
-
-    val textStates = remember { mutableStateListOf("", "","","") }
+fun RegistrationScreen(navController: NavController, viewModel: AuthViewModel) {
+    val textStates = remember { mutableStateListOf("", "", "", "", "", "") }
     var passwordVisible by remember { mutableStateOf(false) }
     var passwordVisible2 by remember { mutableStateOf(false) }
+    val loading by viewModel.loading.collectAsState()
+    val error by viewModel.error.collectAsState()
+    val registerSuccess by viewModel.registerSuccess.collectAsState()
+    val otpSent by viewModel.otpSent.collectAsState()
+    LaunchedEffect(registerSuccess) {
+        if (registerSuccess) {
+            navController.navigate(Screen.Login.route)
+        }
+    }
+    LaunchedEffect(otpSent) {
+        if (otpSent) {
+            navController.navigate(Screen.Verification.createRoute(textStates[1]))
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.darkBlue), // Dark background
+            .background(AppColors.darkBlue),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
 
-
         Column(
-            modifier = Modifier.padding(top = 140.dp),
+            modifier = Modifier.padding(top = 50.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
@@ -92,12 +78,10 @@ fun RegistrationScreen(navController: NavController) {
                 color = Color.White
             )
         }
-
-
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 40.dp)
+                .padding(top = 20.dp)
                 .fillMaxHeight(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -105,8 +89,9 @@ fun RegistrationScreen(navController: NavController) {
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
+                    .padding(horizontal = 24.dp)
+                    .fillMaxWidth(),
+
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
@@ -114,7 +99,7 @@ fun RegistrationScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    // Name Field
+                    Spacer(modifier = Modifier.height(7.dp))
                     Text(
                         "NAME",
                         fontSize = 12.sp,
@@ -133,8 +118,8 @@ fun RegistrationScreen(navController: NavController) {
                             containerColor = AppColors.lightBlue
                         )
                     )
+                    Spacer(modifier = Modifier.height(7.dp))
 
-                    Spacer(modifier = Modifier.height(26.dp))
                     // Email Field
                     Text(
                         "EMAIL",
@@ -154,8 +139,8 @@ fun RegistrationScreen(navController: NavController) {
                             containerColor = AppColors.lightBlue
                         )
                     )
+                    Spacer(modifier = Modifier.height(7.dp))
 
-                    Spacer(modifier = Modifier.height(26.dp))
 
                     // Password Field
                     Text(
@@ -170,27 +155,25 @@ fun RegistrationScreen(navController: NavController) {
                         placeholder = { Text("********", color = Color.Gray) },
                         modifier = Modifier.fillMaxWidth().height(64.dp),
                         shape = RoundedCornerShape(8.dp),
-
                         visualTransformation = if (!passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
                         trailingIcon = {
                             IconButton(
                                 onClick = { passwordVisible = !passwordVisible },
                                 modifier = Modifier.padding(end = 8.dp)
                             ) {
-
                                 Icon(
                                     imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                                     contentDescription = if (passwordVisible) "Hide password" else "Show password"
                                 )
                             }
                         },
-
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             unfocusedBorderColor = Color.White,
                             focusedBorderColor = Color.White,
                             containerColor = AppColors.lightBlue
                         )
                     )
+                    Spacer(modifier = Modifier.height(7.dp))
 
                     // Verify Password Field
                     Text(
@@ -205,21 +188,60 @@ fun RegistrationScreen(navController: NavController) {
                         placeholder = { Text("********", color = Color.Gray) },
                         modifier = Modifier.fillMaxWidth().height(64.dp),
                         shape = RoundedCornerShape(8.dp),
-
                         visualTransformation = if (!passwordVisible2) PasswordVisualTransformation() else VisualTransformation.None,
                         trailingIcon = {
                             IconButton(
                                 onClick = { passwordVisible2 = !passwordVisible2 },
                                 modifier = Modifier.padding(end = 8.dp)
                             ) {
-
                                 Icon(
                                     imageVector = if (passwordVisible2) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                                     contentDescription = if (passwordVisible) "Hide password" else "Show password"
                                 )
                             }
                         },
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            unfocusedBorderColor = Color.White,
+                            focusedBorderColor = Color.White,
+                            containerColor = AppColors.lightBlue
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(7.dp))
 
+                    // Address Field
+                    Text(
+                        "ADDRESS",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    OutlinedTextField(
+                        value = textStates[4],
+                        onValueChange = { textStates[4] = it },
+                        placeholder = { Text("123 Main St", color = Color.Gray) },
+                        modifier = Modifier.fillMaxWidth().height(64.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            unfocusedBorderColor = Color.White,
+                            focusedBorderColor = Color.White,
+                            containerColor = AppColors.lightBlue
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(7.dp))
+
+                    // Phone Number Field
+                    Text(
+                        "PHONE NUMBER",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    OutlinedTextField(
+                        value = textStates[5],
+                        onValueChange = { textStates[5] = it },
+                        placeholder = { Text("123-456-7890", color = Color.Gray) },
+                        modifier = Modifier.fillMaxWidth().height(64.dp),
+                        shape = RoundedCornerShape(8.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             unfocusedBorderColor = Color.White,
                             focusedBorderColor = Color.White,
@@ -228,11 +250,22 @@ fun RegistrationScreen(navController: NavController) {
                     )
                 }
 
-                Spacer(modifier = Modifier.height(26.dp))
+                Spacer(modifier = Modifier.height(7.dp))
 
-                // Login Button
+                // Register Button
                 Button(
-                    onClick = { navController.navigate(Destination.Home.route) },
+                    onClick = {
+                        val request  = RegisterRequest(
+                            email = textStates[1],
+                            password = textStates[2],
+                            firstname = textStates[0],
+                            lastname = "",
+                            phonenumber = textStates[5],
+                            address = textStates[4]
+                        )
+                        viewModel.register(request)
+//
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(64.dp),
@@ -248,7 +281,7 @@ fun RegistrationScreen(navController: NavController) {
                     )
                 }
 
-                Spacer(modifier = Modifier.height(26.dp))
+                Spacer(modifier = Modifier.height(7.dp))
 
                 // Sign Up
                 Row {
@@ -262,11 +295,18 @@ fun RegistrationScreen(navController: NavController) {
                         color = Color(0xFFFF8000),
                         fontWeight = FontWeight.Bold,
                         fontFamily = PlusJakartaSans,
-                        modifier = Modifier.clickable(onClick = { navController.navigate(Destination.Login.route) })
+                        modifier = Modifier.clickable(onClick = { navController.navigate(Screen.Login.route) })
                     )
                 }
 
+                if (loading) {
+                    ElegantCircularProgressIndicator()
+                }
 
+                error?.let {
+                    AmazingErrorPopup(it)
+
+                }
             }
         }
     }

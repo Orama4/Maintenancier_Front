@@ -1,6 +1,7 @@
 package com.example.clientmaintenancier.ui.screens
 import ModernButton
-import ModernTextField
+import ModernPasswordTextField
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -30,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,6 +42,8 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,6 +56,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -58,8 +64,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+
 import com.example.clientmaintenancier.R
-import com.example.clientmaintenancier.api.SendOTPRequest
+import com.example.clientmaintenancier.api.ResetPasswordRequest
+import com.example.clientmaintenancier.api.VerifyOTPRequest
 import com.example.clientmaintenancier.navigation.Screen
 import com.example.clientmaintenancier.ui.theme.AppColors
 import com.example.clientmaintenancier.ui.theme.PlusJakartaSans
@@ -67,8 +75,9 @@ import com.example.clientmaintenancier.viewmodels.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForgetPasswordScreen(navController: NavController, authViewModel: AuthViewModel = viewModel()) {
-    var email by rememberSaveable { mutableStateOf("") }
+fun ResetPasswordScreen(navController: NavController, authViewModel: AuthViewModel = viewModel(), email: String) {
+    var newPassword by rememberSaveable { mutableStateOf("") }
+    var confirmPassword by rememberSaveable { mutableStateOf("") }
     var showError by rememberSaveable { mutableStateOf<String?>(null) }
 
     Scaffold(
@@ -90,7 +99,7 @@ fun ForgetPasswordScreen(navController: NavController, authViewModel: AuthViewMo
                     contentDescription = null,
                 )
                 Text(
-                    text = "Forgot Password",
+                    text = "Reset Password",
                     modifier = Modifier.padding(8.dp),
                     color = AppColors.darkBlue,
                     fontSize = 20.sp,
@@ -101,12 +110,18 @@ fun ForgetPasswordScreen(navController: NavController, authViewModel: AuthViewMo
             }
             Spacer(modifier = Modifier.height(20.dp))
 
-            ModernTextField(
-                value = email,
-                onValueChange = { email = it; showError = null },
-                label = "Email Address"
+            ModernPasswordTextField(
+                value = newPassword,
+                onValueChange = { newPassword = it; showError = null },
+                label = "New Password"
             )
             Spacer(modifier = Modifier.height(16.dp))
+            ModernPasswordTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it; showError = null },
+                label = "Confirm New Password",
+                isError = showError != null && (newPassword != confirmPassword || showError?.contains("match") == true)
+            )
 
             AnimatedVisibility(visible = showError != null) {
                 Text(
@@ -119,21 +134,22 @@ fun ForgetPasswordScreen(navController: NavController, authViewModel: AuthViewMo
 
             Spacer(modifier = Modifier.height(32.dp))
             ModernButton(
-                text = "Send OTP",
+                text = "Reset Password",
                 onClick = {
-                    if (email.isEmpty()) {
-                        showError = "Email is required."
+                    if (newPassword.length < 6) {
+                        showError = "New password must be at least 6 characters."
+                    } else if (newPassword != confirmPassword) {
+                        showError = "New passwords do not match."
                     } else {
-                        authViewModel.sendForgotPasswordOTP(SendOTPRequest(email = email))
+                        authViewModel.resetPassword(ResetPasswordRequest(email = email, newPassword = newPassword))
                         if (authViewModel.error.value == null) {
-                            navController.navigate(Screen.VerificationOtp.createRoute(email))
-
+                            navController.navigate(Screen.Login.route)
                         } else {
                             showError = authViewModel.error.value
                         }
                     }
                 },
-                enabled = email.isNotEmpty()
+                enabled = newPassword.isNotEmpty() && confirmPassword.isNotEmpty()
             )
         }
     }
